@@ -346,13 +346,14 @@
             const btn = document.getElementById('otp-btn');
             btn.disabled = true; btn.textContent = 'جاري التحقق...';
             try {
+                const phone = window.finalRegistrationData.phone.replace(/\D/g, '');
                 const res = await fetch('/api/index.js?action=verify_otp', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        phone: window.finalRegistrationData.phone,
+                        phone: phone,
                         code: code,
                         purpose: 'register',
-                        registration_data: window.finalRegistrationData
+                        registration_data: { ...window.finalRegistrationData, phone: phone }
                     })
                 });
                 const data = await res.json();
