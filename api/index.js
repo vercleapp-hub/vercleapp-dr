@@ -228,6 +228,31 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, devices: data || [] });
     }
 
+    if (action.startsWith('me/devices/') && method === 'DELETE') {
+        const user = await getAuthUser();
+        if(!user) return res.status(401).json({ error: 'منتهي' });
+        const deviceID = action.split('/')[2];
+        const { error } = await supabase.from('devices').delete().eq('id', deviceID).eq('user_id', user.id);
+        if (error) throw error;
+        return res.status(200).json({ success: true });
+    }
+
+    if (action === 'me/tickets' && method === 'GET') {
+        const user = await getAuthUser();
+        if(!user) return res.status(401).json({ error: 'منتهي' });
+        const { data } = await supabase.from('tickets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+        return res.status(200).json({ success: true, tickets: data || [] });
+    }
+
+    if (action === 'me/tickets' && method === 'POST') {
+        const user = await getAuthUser();
+        if(!user) return res.status(401).json({ error: 'منتهي' });
+        const { subject, message, priority } = req.body;
+        const { data, error } = await supabase.from('tickets').insert({ user_id: user.id, subject, message, priority, status: 'open' }).select().single();
+        if (error) throw error;
+        return res.status(200).json({ success: true, ticket: data });
+    }
+
     if (action === 'me/deposit_reports' && method === 'GET') {
         const user = await getAuthUser();
         if(!user) return res.status(401).json({ error: 'منتهي' });
@@ -377,14 +402,17 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: { ...user, balance: wallet?.balance || 0, golden_points: wallet?.golden_points || 0, credit_limit: wallet?.credit_limit || 0 } });
     }
 
-    if (action === 'me/categories' && method === 'GET') {
-      const { data } = await supabase.from('service_categories').select('*').order('sort_order', { ascending: true });
-      return res.status(200).json({ success: true, categories: data || [] });
+    if (action === 'categories' && method === 'GET') {
+        const { data } = await supabase.from('service_categories').select('*').order('sort_order', { ascending: true });
+        return res.status(200).json({ success: true, categories: data || [] });
     }
 
-    if (action === 'me/services' && method === 'GET') {
-      const { data } = await supabase.from('services').select('*').eq('is_active', true);
-      return res.status(200).json({ success: true, services: data || [] });
+    if (action === 'services' && method === 'GET') {
+        const catId = req.query.category_id;
+        let query = supabase.from('services').select('*').eq('is_active', true);
+        if (catId) query = query.eq('category_id', catId);
+        const { data } = await query.order('name', { ascending: true });
+        return res.status(200).json({ success: true, services: data || [] });
     }
 
     if (action === 'me/available_cards' && method === 'GET') {
