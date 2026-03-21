@@ -89,6 +89,14 @@
 
     <script>
         lucide.createIcons();
+        
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
+        }
 
         // Check if current user is admin
         const userStr = localStorage.getItem('drpay_user');
@@ -103,12 +111,12 @@
             btn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> جاري الإنشاء...';
 
             try {
-                const res = await fetch('/api?action=admin/create_admin', {
+                const res = await fetch('/api/index.js?action=admin/create_admin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: document.getElementById('admin-name').value,
-                        phone: document.getElementById('admin-phone').value,
+                        phone: standardizePhone(document.getElementById('admin-phone').value),
                         email: document.getElementById('admin-email').value,
                         password: document.getElementById('admin-pass').value
                     })

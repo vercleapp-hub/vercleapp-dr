@@ -92,7 +92,7 @@ export default async function handler(req, res) {
         const cleanCode = otp.toString().replace(/\D/g, '').trim();
         const { data: valid } = await supabase.from('otp_verifications')
           .select('*').eq('phone', cleanIdentifier).eq('code', cleanCode).eq('purpose', otp_purpose).eq('is_verified', false)
-          .gt('created_at', new Date(Date.now() - 15*60*1000).toISOString()).single();
+          .gt('created_at', new Date(Date.now() - 30*60*1000).toISOString()).order('created_at', { ascending: false }).limit(1).maybeSingle();
         if (!valid) return res.status(400).json({ error: 'كود التحقق خاطئ أو منتهي' });
         await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
       }
@@ -183,8 +183,10 @@ export default async function handler(req, res) {
         // Direct registration with OTP (legacy or direct call)
         const cleanPhone = standardizePhone(phone);
         const cleanCode = otp.toString().replace(/\D/g, '').trim();
-        const { data: valid } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).eq('code', cleanCode).eq('purpose', 'register').eq('is_verified', false).single();
-        if (!valid) return res.status(400).json({ error: 'كود التحقق خاطئ' });
+        const { data: valid } = await supabase.from('otp_verifications').select('*')
+          .eq('phone', cleanPhone).eq('code', cleanCode).eq('purpose', 'register').eq('is_verified', false)
+          .gt('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()).order('created_at', { ascending: false }).limit(1).maybeSingle();
+        if (!valid) return res.status(400).json({ error: 'كود التحقق خاطئ أو منتهي' });
         await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
         const { data: user, error } = await supabase.from('custom_users').insert({ 
             ...regData, role: 'user', status: 'active' 
@@ -256,7 +258,11 @@ export default async function handler(req, res) {
     if (action === 'verify_password_reset_otp' && method === 'POST') {
         const { phone, code } = req.body;
         const cleanPhone = standardizePhone(phone);
-        const { data: valid } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).eq('code', code).eq('purpose', 'password_reset').eq('is_verified', false).order('created_at', { ascending: false }).limit(1).single();
+        const cleanCode = code.toString().replace(/\D/g, '').trim();
+        const { data: valid } = await supabase.from('otp_verifications').select('*')
+            .eq('phone', cleanPhone).eq('code', cleanCode).eq('purpose', 'password_reset').eq('is_verified', false)
+            .gt('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString())
+            .order('created_at', { ascending: false }).limit(1).maybeSingle();
         if (!valid) return res.status(400).json({ error: 'كود التحقق غير صحيح أو منتهي' });
         await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
         return res.status(200).json({ success: true });
@@ -285,7 +291,7 @@ export default async function handler(req, res) {
         // Debug: Log the search criteria
         console.log(`Verifying OTP: Phone=${cleanPhone}, Code=${code}, Purpose=${purpose}`);
 
-        // Robust matching: strip non-digits from code and sanitize phone again
+        // Robust matching: allow any unverified code for this phone/purpose within last 30m
         const cleanCode = code.toString().replace(/\D/g, '').trim();
         const { data: valid, error: findError } = await supabase.from('otp_verifications')
             .select('*')
@@ -293,19 +299,20 @@ export default async function handler(req, res) {
             .eq('code', cleanCode)
             .eq('purpose', purpose)
             .eq('is_verified', false)
+            .gt('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString())
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (findError || !valid) {
             console.error("OTP Find Error:", findError);
-            const { data: recent } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).order('created_at', { ascending: false }).limit(3);
+            const { data: recent } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).order('created_at', { ascending: false }).limit(5);
             return res.status(400).json({ 
                 error: 'كود التحقق خاطئ أو منتهي', 
-                details: findError ? findError.message : 'No matching record found',
+                details: findError ? findError.message : 'No matching unverified record found within time limit',
                 debug: { 
                     searchedPhone: cleanPhone, 
-                    searchedCode: code.trim(),
+                    searchedCode: cleanCode,
                     searchedPurpose: purpose,
                     recentCodesForThisPhone: recent ? recent.map(r => ({ code: r.code, p: r.purpose, verified: r.is_verified, at: r.created_at })) : []
                 } 
@@ -344,9 +351,18 @@ export default async function handler(req, res) {
             await supabase.from('sessions').insert({ user_id: user.id, session_id: token });
             return res.status(200).json({ success: true, user, token });
         } else if (purpose === 'new_device' && login_data) {
-            const { data: user } = await supabase.from('custom_users').select('*').eq('phone', phone).single();
-            await supabase.from('devices').insert({ user_id: user.id, device_fingerprint: login_data.device_id, device_info: login_data.device_info, location: login_data.location });
-            const token = crypto.randomUUID();
+            const { data: user } = await supabase.from('custom_users').select('*').eq('phone', cleanPhone).single();
+            if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+            
+            await supabase.from('devices').upsert({ 
+                user_id: user.id, 
+                device_fingerprint: login_data.device_id, 
+                device_info: login_data.device_info, 
+                location: login_data.location,
+                created_at: new Date().toISOString()
+            }, { onConflict: 'user_id,device_fingerprint' });
+
+            const token = crypto.randomUUID ? crypto.randomUUID() : 'session-'+Date.now();
             await supabase.from('sessions').insert({ user_id: user.id, session_id: token });
             return res.status(200).json({ success: true, user, token });
         }

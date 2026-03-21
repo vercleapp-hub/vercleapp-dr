@@ -78,6 +78,14 @@
         lucide.createIcons();
         window.loginData = null;
 
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
+        }
+
         function showResult(isSuccess, message) {
             const div = document.getElementById('result');
             div.className = `mt-8 text-center p-4 rounded-2xl text-xs font-bold border backdrop-blur-md ${isSuccess ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-red-500/10 border-red-500/50 text-red-400'}`;
@@ -103,12 +111,15 @@
 
             try {
                 const sec = await getSecurity();
+                const identifier = standardizePhone(document.getElementById('phone').value);
+                const password = document.getElementById('password').value;
+
                 const res = await fetch('/api/index.js?action=login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        identifier: document.getElementById('phone').value, 
-                        password: document.getElementById('password').value,
+                        identifier, 
+                        password,
                         expected_role: 'admin',
                         ...sec
                     })
@@ -148,7 +159,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    phone: window.loginData.phone,
+                    phone: standardizePhone(window.loginData.phone),
                     code: code,
                     purpose: 'new_device',
                     login_data: window.loginData

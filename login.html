@@ -218,6 +218,14 @@
     <script>
         lucide.createIcons();
 
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
+        }
+
         // Auto Request Location on Load
         window.onload = () => {
              if (navigator.geolocation) {
@@ -286,7 +294,7 @@
 
             try {
                 const secPayload = await getSecurityPayload();
-                const identifier = document.getElementById('log-phone').value;
+                const identifier = standardizePhone(document.getElementById('log-phone').value);
                 const password = document.getElementById('log-password').value;
 
                 const res = await fetch('/api/index.js?action=login', {
@@ -339,7 +347,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        phone: window.loginData.phone,
+                        phone: standardizePhone(window.loginData.phone),
                         code: code,
                         purpose: 'new_device',
                         login_data: {

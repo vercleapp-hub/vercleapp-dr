@@ -89,6 +89,14 @@
         lucide.createIcons();
         window.registrationData = null;
 
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
+        }
+
         function showResult(success, msg) {
             const r = document.getElementById('result');
             r.className = `mt-10 text-center p-5 rounded-2xl text-xs font-bold border backdrop-blur-md ${success ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-red-500/10 border-red-500/50 text-red-400'}`;
@@ -105,7 +113,7 @@
 
             const payload = {
                 name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
+                phone: standardizePhone(document.getElementById('phone').value),
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 national_id: document.getElementById('nid').value,
@@ -148,7 +156,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        phone: window.registrationData.phone,
+                        phone: standardizePhone(window.registrationData.phone),
                         code: document.getElementById('otp-code').value,
                         purpose: 'register_admin',
                         registration_data: { ...window.registrationData, role: 'admin' }

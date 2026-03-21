@@ -200,6 +200,14 @@
         let currentTarget = null;
         let stream = null;
 
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
+        }
+
         // Auto Request Location on Load
         window.onload = () => {
              if (navigator.geolocation) {
@@ -226,7 +234,7 @@
 
         document.getElementById('step1-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('reg-phone').value;
+            const phone = standardizePhone(document.getElementById('reg-phone').value);
             const nid = document.getElementById('reg-nid').value;
             const btn = document.getElementById('step1-btn');
             
@@ -333,7 +341,7 @@
                 const finalData = {
                     ...window.registrationData,
                     name: document.getElementById('reg-name').value,
-                    whatsapp_number: document.getElementById('reg-whatsapp').value,
+                    whatsapp_number: standardizePhone(document.getElementById('reg-whatsapp').value),
                     email: document.getElementById('reg-email').value,
                     address: document.getElementById('reg-address').value,
                     shop_name: document.getElementById('reg-shop-name').value,
@@ -369,7 +377,7 @@
             
             btn.disabled = true; btn.textContent = 'جاري التحقق...';
             try {
-                const phone = window.finalRegistrationData.phone; // Send as is, server will standardize
+                const phone = standardizePhone(window.finalRegistrationData.phone);
                 const res = await fetch('/api/index.js?action=verify_otp', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
