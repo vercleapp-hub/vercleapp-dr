@@ -147,12 +147,20 @@
 
         <!-- CAMERA MODAL -->
         <div id="cam-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex flex-col items-center justify-center p-4">
-            <video id="video-stream" autoplay playsinline class="w-full max-w-sm rounded-[2rem] border-2 border-white/20 shadow-2xl overflow-hidden"></video>
-            <div class="mt-8 flex gap-4">
-                <button onclick="closeCamera()" class="bg-slate-800 text-white p-4 rounded-full border border-white/10"><i data-lucide="x" class="w-6 h-6"></i></button>
-                <button onclick="takeSnapshot()" class="bg-white text-slate-900 p-6 rounded-full shadow-2xl transform active:scale-90 transition"><i data-lucide="camera" class="w-8 h-8"></i></button>
+            <video id="video-stream" autoplay playsinline class="w-full max-w-sm rounded-[2rem] border-2 border-white/20 shadow-2xl overflow-hidden bg-slate-900"></video>
+            <div class="mt-8 flex gap-4 items-center">
+                <button onclick="closeCamera()" class="bg-slate-800 text-white p-4 rounded-full border border-white/10 hover:bg-slate-700 transition" title="إلغاء">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <button onclick="takeSnapshot()" class="bg-emerald-500 text-white p-6 rounded-full shadow-2xl transform active:scale-90 transition hover:bg-emerald-400" title="التقاط صورة">
+                    <i data-lucide="camera" class="w-8 h-8"></i>
+                </button>
+                <button onclick="document.getElementById('file-input').click()" class="bg-blue-600 text-white p-4 rounded-full border border-white/10 hover:bg-blue-500 transition" title="رفع من الملفات">
+                    <i data-lucide="upload" class="w-6 h-6"></i>
+                </button>
             </div>
-            <p class="mt-4 text-xs text-slate-400 font-bold">ضع البطاقة داخل الإطار وقم بالالتقاط</p>
+            <p class="mt-4 text-xs text-slate-400 font-bold">ضع البطاقة داخل الإطار أو اختر صورة من جهازك</p>
+            <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
         </div>
 
         <!-- OTP VIEW -->
@@ -267,6 +275,25 @@
             window.registrationData[currentTarget.replace('-','_')] = dataUrl;
             
             closeCamera();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('prev-' + currentTarget);
+                const icon = document.getElementById('icon-' + currentTarget);
+                
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                if(icon) icon.classList.add('hidden');
+                window.registrationData[currentTarget.replace('-','_')] = e.target.result;
+                
+                closeCamera();
+            };
+            reader.readAsDataURL(file);
         }
 
         document.getElementById('step2-form').addEventListener('submit', async (e) => {
