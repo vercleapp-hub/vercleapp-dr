@@ -28,13 +28,23 @@
             --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; overflow-x: hidden; user-select: none; overscroll-behavior-y: contain; }
         .hidden-view { display: none !important; }
-        .glass-header { background: var(--header-grad); backdrop-filter: blur(15px); }
-        .cat-card { background: var(--panel-bg); border: 1px solid var(--border); box-shadow: var(--card-shadow); transition: all 0.3s; }
-        .cat-card:active { transform: scale(0.95); opacity: 0.8; }
+        .glass-header { background: var(--header-grad); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .cat-card { background: var(--panel-bg); border: 1px solid var(--border); box-shadow: var(--card-shadow); transition: transform 0.1s ease-out, opacity 0.1s; cursor: pointer; }
+        .cat-card:active { transform: scale(0.94); opacity: 0.7; }
         
-        .modal-glass { background: var(--panel-bg); backdrop-filter: blur(30px); border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .modal-glass { background: var(--panel-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        /* Mobile Scroll Smoothing */
+        * { -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+        
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding: 12px 10px 24px; z-index: 50; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text); opacity: 0.4; transition: all 0.3s; background: none; border: none; outline: none; }
+        .nav-btn.active { opacity: 1; color: #3b82f6; transform: translateY(-4px); }
+        .nav-btn.active i { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5)); }
+        .nav-btn span { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.025em; }
         .input-alt { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); }
         .input-alt:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
         
@@ -71,7 +81,7 @@
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center p-1 shadow-lg shadow-blue-500/20">
-                    <img src="logo/logo.png" class="w-7 h-7 object-contain">
+                    <img src="images/logo.png" class="w-7 h-7 object-contain">
                 </div>
                 <div>
                     <h2 class="text-white font-black text-lg leading-none">الدكتور باي</h2>
@@ -101,8 +111,10 @@
 
         <!-- CATEGORIES LIST -->
         <div class="space-y-1 mb-8">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 mr-3">أقسام الخدمات</p>
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 mr-3">القائمة الرئيسية</p>
             <nav class="space-y-0.5">
+                <button onclick="openView('home'); toggleSidebar()" class="sidebar-item active mb-4"><i data-lucide="home" class="w-4 h-4"></i> الصفحة الرئيسية</button>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 mt-8 mr-3">أقسام الخدمات</p>
                 <button onclick="openServicesModal('شحن الموبيل')" class="sidebar-item"><i data-lucide="smartphone" class="w-4 h-4"></i> شحن الموبيل</button>
                 <button onclick="openCardsModal()" class="sidebar-item"><i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i> كروت الشحن</button>
                 <button onclick="openServicesModal('شحن الفكة')" class="sidebar-item"><i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i> شحن الفكة</button>
@@ -147,7 +159,7 @@
             <button onclick="closePaymentModal()" class="absolute left-6 top-6 text-slate-400 hover:text-white transition bg-slate-900/50 p-1.5 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
             <div class="text-center mb-6 pt-2">
                 <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-inner overflow-hidden">
-                    <img id="pay-logo" src="logo/logo.png" class="w-16 h-16 object-contain">
+                    <img id="pay-logo" src="images/logo.png" class="w-16 h-16 object-contain">
                 </div>
                 <h3 id="pay-service-name" class="text-xl font-black text-white leading-tight mb-1">...</h3>
                 <div class="flex justify-center gap-2 mb-4">
@@ -225,7 +237,7 @@
             <div class="flex-1 overflow-y-auto p-4 mb-4" id="receipt-print-area">
                 <div class="receipt-container" id="thermal-receipt">
                     <div class="receipt-header">
-                        <img src="logo/logo.png" style="width: 40px; height: 40px; margin: 0 auto 5px; display: block;">
+                        <img src="images/logo.png" style="width: 40px; height: 40px; margin: 0 auto 5px; display: block;">
                         <div style="font-weight: 800; font-size: 14px;">الدكتور باي (Dr Pay)</div>
                         <div style="font-size: 10px;">الخدمه علي طول</div>
                     </div>
@@ -263,57 +275,53 @@
         </div>
     </div>
 
+    <!-- Bottom Navigation Bar for Mobile App Feel -->
+    <nav class="bottom-nav">
+        <button onclick="openView('home')" id="nav-home" class="nav-btn active flex flex-col items-center"><i data-lucide="layout-grid" class="w-6 h-6"></i><span>الرئيسية</span></button>
+        <button onclick="openView('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center"><i data-lucide="wallet" class="w-6 h-6"></i><span>المحفظة</span></button>
+        <button onclick="openView('reports')" id="nav-reports" class="nav-btn flex flex-col items-center"><i data-lucide="file-text" class="w-6 h-6"></i><span>التقارير</span></button>
+        <button onclick="openView('settings')" id="nav-settings" class="nav-btn flex flex-col items-center"><i data-lucide="settings" class="w-6 h-6"></i><span>الإعدادات</span></button>
+    </nav>
+
     <!-- Header Content: Top Bar -->
-    <header id="main-header" class="glass-header p-3 px-4 rounded-b-[2rem] shadow-xl fixed top-0 w-full z-40 border-b border-white/10 transition-colors duration-500">
-        <div class="flex justify-between items-center mb-3">
+    <header id="main-header" class="glass-header p-2.5 px-4 rounded-b-3xl shadow-lg fixed top-0 w-full z-40 border-b border-white/5 transition-all duration-300">
+        <div class="flex justify-between items-center mb-2">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="w-11 h-11 bg-slate-900/50 border border-white/10 rounded-2xl flex items-center justify-center text-blue-300 hover:text-white transition group relative active:scale-90">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
-                    <span class="absolute -bottom-1 w-1.5 h-1.5 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                <button onclick="toggleSidebar()" class="w-10 h-10 bg-slate-900/40 border border-white/5 rounded-xl flex items-center justify-center text-blue-300 active:scale-90 transition">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
                 <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 p-0.5 shadow-lg hidden sm:block">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 p-0.5 shadow-lg hidden sm:block">
                     <div class="w-full h-full bg-slate-900 rounded-[0.8rem] flex items-center justify-center overflow-hidden border border-white/20">
-                        <img src="logo/logo.png" alt="Dr Pay" class="w-7 h-7 object-contain">
+                        <img src="images/logo.png" alt="Dr Pay" class="w-7 h-7 object-contain">
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-white font-black text-sm tracking-tight" id="header-shop-name">جاري التحميل...</span>
-                        <i data-lucide="badge-check" class="w-3.5 h-3.5 text-blue-400 fill-blue-400/20"></i>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span class="text-white/40 text-[9px] font-bold uppercase tracking-widest leading-none mt-0.5">تاجر معتمد بنجاح</span>
+                    <div class="flex items-center gap-1">
+                        <span class="text-white font-black text-xs" id="header-shop-name">...</span>
+                        <i data-lucide="badge-check" class="w-3 h-3 text-blue-400"></i>
                     </div>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
-                <div class="text-left bg-gradient-to-l from-slate-900/60 to-transparent border-r border-white/10 pr-3 pl-1 py-0.5 relative group">
-                    <div class="absolute inset-0 bg-emerald-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <p class="text-[7px] text-blue-300 font-black uppercase tracking-[0.2em] mb-0 text-right relative z-10">الرصيد</p>
-                    <p class="text-lg font-black text-white font-mono tracking-tighter relative z-10" id="user-balance">0.00 <span class="text-[9px] text-emerald-400">ج.م</span></p>
+                <div class="text-left bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl group overflow-hidden">
+                    <p class="text-xs font-black text-emerald-400 font-mono" id="user-balance">0.00</p>
                 </div>
-                <button onclick="openNotifications()" class="relative w-11 h-11 bg-slate-900/40 border border-white/10 rounded-2xl flex items-center justify-center text-blue-300 hover:bg-slate-800 transition active:scale-95 shadow-lg group">
-                    <i data-lucide="bell" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
-                    <span id="notif-badge" class="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 border-2 border-slate-900 rounded-full hidden animate-bounce"></span>
+                <button onclick="openNotifications()" class="w-10 h-10 bg-slate-900/40 border border-white/5 rounded-xl flex items-center justify-center text-blue-300 active:scale-90">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
         
         <!-- Search -->
-        <div class="relative group">
-            <input type="text" id="quick-search" oninput="searchServices(this.value)" placeholder="ابحث باسم الخدمة أو الكود المختصر..." class="w-full bg-slate-900/50 backdrop-blur-md text-white border border-white/10 rounded-[1.5rem] px-12 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/30 placeholder-white/30 transition-all shadow-inner">
-            <i data-lucide="search" class="absolute right-4 top-4 w-5 h-5 text-blue-500"></i>
-            <div class="absolute left-4 top-4 flex items-center gap-1">
-                <div class="h-5 w-[1px] bg-white/10 mx-1"></div>
-                <i data-lucide="command" class="w-4 h-4 text-white/20"></i>
-            </div>
+        <div class="relative px-1">
+            <input type="text" id="quick-search" oninput="searchServices(this.value)" placeholder="ابحث باسم الخدمة..." class="w-full bg-slate-950/40 text-white border border-white/5 rounded-xl px-10 py-2.5 text-xs outline-none focus:border-blue-500/50 transition-all font-bold">
+            <i data-lucide="search" class="absolute right-4 top-2.5 w-4 h-4 text-blue-500/50"></i>
         </div>
     </header>
 
-    <main class="mt-[150px] px-4 relative z-10" id="main-content">
+    <main class="mt-[110px] px-4 relative z-10" id="main-content">
         <!-- Dashboard View -->
         <div id="view-home" class="space-y-4">
             
@@ -327,19 +335,6 @@
                 <!-- Javascript will inject categories here -->
             </div>
             
-            <!-- Customer Service Mini Footer -->
-            <div class="my-6 bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-5 text-center shadow-xl">
-                <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                    <i data-lucide="headphones" class="w-7 h-7"></i>
-                </div>
-                <h3 class="text-white font-extrabold text-sm mb-1">خدمة العملاء والدعم الفني</h3>
-                <p class="text-emerald-400 font-mono font-black text-xl tracking-widest mb-3 bg-slate-900/50 py-2 rounded-xl border border-slate-700/50 inline-block px-6">01063151472</p>
-                <div class="flex justify-center gap-3 text-[11px] font-bold text-slate-300">
-                    <a href="https://wa.me/201063151472" class="flex items-center gap-1.5 bg-slate-700/50 px-3 py-1.5 rounded-lg hover:bg-[#25D366]/20 transition text-[#25D366]"><i data-lucide="message-circle" class="w-4 h-4"></i> واتس</a>
-                    <a href="#" class="flex items-center gap-1.5 bg-slate-700/50 px-3 py-1.5 rounded-lg hover:bg-[#0088cc]/20 transition text-[#0088cc]"><i data-lucide="send" class="w-4 h-4"></i> تليجرام</a>
-                    <a href="tel:01063151472" class="flex items-center gap-1.5 bg-slate-700/50 px-3 py-1.5 rounded-lg hover:bg-slate-600 transition text-slate-100"><i data-lucide="smartphone" class="w-4 h-4"></i> موبيل</a>
-                </div>
-            </div>
 
         </div>
 
@@ -470,7 +465,6 @@
                     <i data-lucide="alert-circle" class="w-4 h-4 text-red-900"></i>
                 </button>
             </div>
-            <div class="text-center text-[10px] text-slate-600 font-mono py-10 opacity-30">Dr Pay v3.1.5 - All Rights Reserved</div>
         </div>
 
         <!-- SETTINGS SUB-PAGES -->
@@ -607,7 +601,6 @@
             </div>
         </div>
             
-            <div class="text-center text-[10px] text-slate-600 font-mono py-4">Dr Pay v3.1.5 - All Rights Reserved</div>
         </div>
         
     </main>
@@ -1316,7 +1309,6 @@
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         
         function openView(v) { 
-            // Hide all potential main views and sub-views
             const views = ['home','wallet','reports','settings','sett-profile','sett-deposits','sett-devices','sett-security','sett-system'];
             views.forEach(id => {
                 const el = document.getElementById('view-'+id);
@@ -1324,17 +1316,18 @@
             });
             
             const target = document.getElementById('view-'+v);
-            if (target) target.classList.remove('hidden-view');
+            if (target) {
+                target.classList.remove('hidden-view');
+            }
             
             // Update bottom nav active state
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('text-blue-500'));
-            
-            // If it's a settings sub-view, highlight the settings nav icon
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             const navId = (v.startsWith('sett-')) ? 'nav-settings' : 'nav-' + v;
             const navBtn = document.getElementById(navId);
-            if (navBtn) navBtn.classList.add('text-blue-500');
+            if (navBtn) navBtn.classList.add('active');
             
             if (v === 'settings' || v.startsWith('sett-')) loadMe();
+            window.scrollTo({top: 0, behavior: 'smooth'});
             lucide.createIcons();
         }
 
