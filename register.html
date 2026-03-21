@@ -363,11 +363,13 @@
         });
 
         async function verifyOTP() {
-            const code = document.getElementById('otp-code').value;
+            const code = document.getElementById('otp-code').value.replace(/\D/g, '').trim();
             const btn = document.getElementById('otp-btn');
+            if (code.length < 6) return alert("يرجى إدخال الكود المكون من 6 أرقام");
+            
             btn.disabled = true; btn.textContent = 'جاري التحقق...';
             try {
-                const phone = window.finalRegistrationData.phone.replace(/\D/g, '');
+                const phone = window.finalRegistrationData.phone; // Send as is, server will standardize
                 const res = await fetch('/api/index.js?action=verify_otp', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -8,14 +8,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: #f8fafc; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg: #0f172a;
+            --text: #f8fafc;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --header-grad: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .light-theme {
+            --bg: #f1f5f9;
+            --text: #0f172a;
+            --panel-bg: #ffffff;
+            --border: rgba(0, 0, 0, 0.08);
+            --header-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --input-bg: #f8fafc;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; }
         .hidden-view { display: none !important; }
-        .glass-header { background: linear-gradient(135deg, rgba(37,99,235,0.9) 0%, rgba(79,70,229,0.95) 100%); backdrop-filter: blur(10px); }
-        .cat-card { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #334155; }
-        .cat-card:active { transform: scale(0.95); border-color: #3b82f6; }
+        .glass-header { background: var(--header-grad); backdrop-filter: blur(15px); }
+        .cat-card { background: var(--panel-bg); border: 1px solid var(--border); box-shadow: var(--card-shadow); transition: all 0.3s; }
+        .cat-card:active { transform: scale(0.95); opacity: 0.8; }
         
-        /* Thermal Receipt Styling (48mm focus) */
-        .receipt-container { width: 100%; max-width: 48mm; margin: 0 auto; background: white; color: black; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 11px; line-height: 1.4; border: 1px solid #eee; }
+        .modal-glass { background: var(--panel-bg); backdrop-filter: blur(30px); border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .input-alt { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); }
+        .input-alt:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        
+        /* Receipt (Always White) */
+        .receipt-container { width: 100%; max-width: 48mm; margin: 0 auto; background: white; color: black; padding: 12px; font-family: 'Courier New', Courier, monospace; font-size: 11px; line-height: 1.4; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 4px; }
         .receipt-header { border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; text-align: center; }
         .receipt-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
         .receipt-sep { border-top: 1px dashed #000; margin: 5px 0; }
@@ -23,7 +47,10 @@
         
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        @keyframes scale-up { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-scale-up { animation: scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body class="bg-slate-900">
@@ -701,12 +728,60 @@
                     document.getElementById('user-supervisor').textContent = data.user.supervisor_name || 'الإدارة المركزية';
                 }
 
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('drpay_theme', isLight ? 'light' : 'dark');
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const isLight = localStorage.getItem('drpay_theme') === 'light';
+            if (isLight) document.body.classList.add('light-theme');
+            else document.body.classList.remove('light-theme');
+
+            const btn = document.getElementById('toggle-theme-btn');
+            if (btn) {
+                btn.innerHTML = isLight ? '<i data-lucide="moon" class="w-5 h-5"></i> الوضع الليلي' : '<i data-lucide="sun" class="w-5 h-5"></i> الوضع النهاري';
+                btn.className = isLight ? 'bg-slate-900 text-white w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-black shadow-lg transform active:scale-95 transition-all' : 'bg-white text-slate-900 w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-black shadow-lg transform active:scale-95 transition-all';
+                lucide.createIcons();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateThemeUI();
+            const userStr = localStorage.getItem('drpay_user');
+            if(!userStr) { window.location.href = 'login.html'; return; }
+            currentUser = JSON.parse(userStr);
+            loadMe();
+            loadCategories();
+            setInterval(loadMe, 10000); // Auto refresh balance
+            lucide.createIcons();
+        });
+
+        async function loadMe() {
+            const data = await fetchAPI('me');
+            if(data) {
+                currentUser = data.user;
+                document.getElementById('user-balance').innerHTML = `${data.user.balance.toFixed(2)} <span class="text-[10px] text-emerald-300">ج.م</span>`;
+                document.getElementById('header-shop-name').textContent = data.user.shop_name || data.user.name;
+                
+                // Settings Header / Profile Sub-page
+                if (document.getElementById('sett-profile-name')) {
+                    document.getElementById('sett-profile-name').textContent = data.user.name;
+                    document.getElementById('user-name').textContent = data.user.name;
+                    document.getElementById('user-shop').textContent = data.user.shop_name || '-';
+                    document.getElementById('user-province').textContent = data.user.province || '-';
+                    document.getElementById('sett-bal').textContent = (data.user.balance || 0).toFixed(2);
+                    document.getElementById('user-points').textContent = data.user.golden_points || 0;
+                    document.getElementById('user-credit').textContent = (data.user.credit_limit || 0).toFixed(2);
+                    document.getElementById('user-supervisor').textContent = data.user.supervisor_name || 'الإدارة المركزية';
+                }
+
                 // Generic UI Sync
-                updateThemeUI();
                 const soundBtn = document.getElementById('toggle-sound');
                 if (soundBtn) {
                     soundBtn.innerHTML = isSoundEnabled ? '<i data-lucide="volume-2" class="w-4 h-4"></i> مفعل' : '<i data-lucide="volume-x" class="w-4 h-4"></i> صامت';
-                    soundBtn.className = isSoundEnabled ? 'bg-indigo-600/10 text-indigo-400 w-full py-4 rounded-2xl flex items-center justify-center gap-2 border border-indigo-500/10 font-black' : 'bg-slate-900 text-slate-500 w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-black';
+                    soundBtn.className = isSoundEnabled ? 'bg-indigo-600/10 text-indigo-400 w-full py-4 rounded-2xl flex items-center justify-center gap-2 border border-indigo-500/10 font-black' : 'bg-slate-900/50 text-slate-500 w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-black';
                 }
 
                 // Load notifications
@@ -821,6 +896,14 @@
                     });
                 }
             }
+        }
+
+        function standardizePhone(phone) {
+            if (!phone) return "";
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length > 11) return '0' + clean.slice(-10);
+            if (clean.length === 10 && !clean.startsWith('0')) return '0' + clean;
+            return clean;
         }
 
         async function generateRandomCode() {
