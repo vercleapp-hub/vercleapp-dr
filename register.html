@@ -362,7 +362,13 @@
                     localStorage.setItem('drpay_user', JSON.stringify(data.user));
                     localStorage.setItem('drpay_token', data.token);
                     window.location.href = 'index.html';
-                } else throw new Error(data.error);
+                } else {
+                    let errStr = data.error;
+                    if (data.debug) {
+                        errStr += `\nDEBUG: Phone=${data.debug.searchedPhone}, Correct=${data.debug.recentCodesForThisPhone[0]?.code}`;
+                    }
+                    throw new Error(errStr);
+                }
             } catch(err) {
                 alert(err.message);
                 btn.disabled = false; btn.textContent = 'تأكيد الرمز وإتمام التسجيل';
