@@ -95,6 +95,9 @@ function openView(v) {
         distTools.forEach(el => el.classList.toggle('hidden', currentUser?.role !== 'distributor' && currentUser?.role !== 'admin'));
     }
     if (v === 'sett-devices') loadDevices();
+    if (v === 'reports') loadReports();
+    if (v === 'wallet') loadDepositMethods();
+    if (v === 'support') loadTickets();
     
     window.scrollTo({top: 0, behavior: 'smooth'});
     if(document.getElementById('sidebar')) {
@@ -206,12 +209,13 @@ async function openServicesModal(name, catId = null) {
     const data = await fetchAPI(endpoint);
     if(data) {
         allServices = data.services;
-        renderServicesFiltered(catId);
+        renderServices(catId);
     }
 }
 
-function renderServicesFiltered(catId) {
+function renderServices(catId = null) {
     const grid = document.getElementById('services-grid');
+    if(!grid) return;
     grid.innerHTML = '';
     const q = document.getElementById('service-search').value.toLowerCase();
     
@@ -286,6 +290,38 @@ function openService(s) {
 
 function closePaymentModal() { document.getElementById('payment-modal').classList.add('hidden'); }
 
+async function loadReports() {
+    const list = document.getElementById('reports-list');
+    if(!list) return;
+    list.innerHTML = `<div class="p-10 text-center text-slate-500"><i data-lucide="loader" class="animate-spin mb-2 mx-auto"></i> جاري تحميل التقارير...</div>`;
+    lucide.createIcons();
+    
+    const res = await fetchAPI('me/transactions');
+    if (res && res.success) {
+        list.innerHTML = '';
+        if (res.transactions.length === 0) list.innerHTML = `<div class="p-10 text-center text-slate-600 font-bold">لا يوجد عمليات لعرضها</div>`;
+        res.transactions.forEach(t => {
+            const card = document.createElement('div');
+            card.className = "bg-slate-900/50 p-4 rounded-3xl border border-white/5 flex items-center justify-between group";
+            card.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all"><i data-lucide="arrow-up-right" class="w-5 h-5"></i></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black text-white">${t.service_name}</span>
+                        <span class="text-[9px] text-slate-500 font-mono">${t.customer_phone || '---'} • ${new Date(t.created_at).toLocaleString('ar-EG')}</span>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <div class="text-xs font-black text-emerald-400 font-mono">${t.total.toFixed(2)}</div>
+                    <div class="text-[8px] px-2 py-0.5 rounded-full ${t.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} font-bold inline-block">${t.status === 'paid' ? 'ناجحة' : 'فاشلة'}</div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+        lucide.createIcons();
+    }
+}
+
 async function loadDevices() {
     const table = document.getElementById('connected-devices-table');
     if(!table) return;
@@ -295,18 +331,66 @@ async function loadDevices() {
         table.innerHTML = '';
         res.devices.forEach(d => {
             const row = document.createElement('tr'); row.className = "border-b border-white/5 hover:bg-white/5 transition-colors";
-            const isCurrent = d.fingerprint === localStorage.getItem('drpay_fp');
+            const isCurrent = d.device_fingerprint === localStorage.getItem('drpay_fp');
             row.innerHTML = `
-                <td class="px-4 py-4"><div class="flex items-center gap-2"><i data-lucide="${d.os === 'Windows' ? 'monitor' : 'smartphone'}" class="w-4 h-4 text-blue-400"></i> ${d.browser || 'غير معروف'} (${d.os})</div></td>
-                <td class="px-4 py-4 font-mono text-slate-400">${d.ip}</td>
-                <td class="px-4 py-4 font-mono text-blue-300">${d.fingerprint.substring(0, 8)}...</td>
-                <td class="px-4 py-4 text-[9px] text-slate-500">${new Date(d.last_login).toLocaleString('ar-EG')}</td>
-                <td class="px-4 py-4">${isCurrent ? '<span class="text-emerald-500 font-bold">هذا الجهاز</span>' : `<button onclick="deleteDevice('${d.id}')" class="bg-red-500/10 text-red-500 px-3 py-1.5 rounded-xl hover:bg-red-500 hover:text-white transition flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> حذف</button>`}</td>
+                <td class="px-4 py-4"><div class="flex items-center gap-2"><i data-lucide="${d.device_info?.os === 'Windows' ? 'monitor' : 'smartphone'}" class="w-4 h-4 text-blue-400"></i> ${d.device_info?.browser || 'غير معروف'} (${d.device_info?.os || '---'})</div></td>
+                <td class="px-4 py-4 font-mono text-slate-400 text-xs">${d.ip || '0.0.0.0'}</td>
+                <td class="px-4 py-4 font-mono text-blue-300 text-[10px]">${d.device_fingerprint.substring(0, 8)}...</td>
+                <td class="px-4 py-4 text-[9px] text-slate-500">${new Date(d.created_at).toLocaleString('ar-EG')}</td>
+                <td class="px-4 py-4">${isCurrent ? '<span class="text-emerald-500 font-bold text-xs">جهازك الحالي</span>' : `<button onclick="deleteDevice('${d.id}')" class="bg-red-500/10 text-red-500 px-3 py-1.5 rounded-xl hover:bg-red-500 hover:text-white transition flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> حذف</button>`}</td>
             `;
             table.appendChild(row);
         });
         lucide.createIcons();
     }
+}
+
+async function loadDepositMethods() {
+    const select = document.getElementById('dep-method');
+    if(!select) return;
+    const res = await fetchAPI('me/deposits');
+    if (res && res.success) {
+        select.innerHTML = '<option value="">اختر بوابة الإيداع...</option>';
+        res.methods.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id; opt.textContent = m.name;
+            select.appendChild(opt);
+        });
+    }
+}
+
+async function loadTickets() {
+    const table = document.getElementById('tickets-table');
+    if(!table) return;
+    table.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-500">جاري التحميل...</td></tr>`;
+    const res = await fetchAPI('me/tickets');
+    if (res && res.success) {
+        table.innerHTML = '';
+        if(res.tickets.length === 0) table.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-600">لا يوجد تذاكر حالية</td></tr>`;
+        res.tickets.forEach(t => {
+            const row = document.createElement('tr'); row.className = "border-b border-white/5 hover:bg-white/5 transition-colors";
+            row.innerHTML = `
+                <td class="px-4 py-4 font-mono text-slate-500">#${t.id.substring(0,6)}</td>
+                <td class="px-4 py-4 font-black text-white">${t.subject}</td>
+                <td class="px-4 py-4 text-slate-500">${new Date(t.created_at).toLocaleDateString('ar-EG')}</td>
+                <td class="px-4 py-4"><span class="px-2 py-1 rounded-full text-[8px] font-black ${t.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-700 text-slate-400'}">${t.status === 'open' ? 'مفتوحة' : 'مغلقة'}</span></td>
+                <td class="px-4 py-4 text-left"><button class="bg-slate-900 border border-white/5 p-2 rounded-xl text-blue-400"><i data-lucide="eye" class="w-3 h-3"></i></button></td>
+            `;
+            table.appendChild(row);
+        });
+        lucide.createIcons();
+    }
+}
+
+function openNewTicketModal() {
+    const sub = prompt('أدخل موضوع التذكرة:');
+    const msg = prompt('أدخل تفاصيل المشكلة:');
+    if(sub && msg) submitTicket(sub, msg);
+}
+
+async function submitTicket(subject, message) {
+    const res = await fetchAPI('me/tickets', 'POST', { subject, message, priority: 'normal' });
+    if(res && res.success) { toast('تم إرسال التذكرة بنجاح'); loadTickets(); }
 }
 
 async function deleteDevice(id) {

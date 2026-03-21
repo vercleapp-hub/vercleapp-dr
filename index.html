@@ -160,7 +160,98 @@
             </div>
         </div>
 
-        <!-- Sub-pages for devices and security injected via JS -->
+        <!-- Settings Sub-pages -->
+        <div id="view-sett-profile" class="hidden-view space-y-6">
+            <button onclick="openView('settings')" class="flex items-center gap-2 text-slate-400 font-bold mb-4"><i data-lucide="arrow-right" class="w-4 h-4"></i> العودة للإعدادات</button>
+            <div class="bg-slate-800/50 p-6 rounded-[2.5rem] border border-white/5 space-y-4">
+                <h2 class="text-xl font-black text-white">بيانات الحساب</h2>
+                <div class="space-y-4" id="profile-details-list">
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                        <p class="text-[10px] text-slate-500 font-black uppercase mb-1">الاسم بالكامل</p>
+                        <p id="prof-name" class="text-white font-bold">---</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-sett-devices" class="hidden-view space-y-6">
+            <button onclick="openView('settings')" class="flex items-center gap-2 text-slate-400 font-bold mb-4"><i data-lucide="arrow-right" class="w-4 h-4"></i> العودة</button>
+            <div class="bg-slate-800/50 p-6 rounded-[2.5rem] border border-white/5 shadow-2xl">
+                <h3 class="text-white font-black mb-4 flex items-center gap-2"><i data-lucide="smartphone" class="text-blue-400"></i> الأجهزة المتصلة</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead><tr class="text-slate-500 border-b border-white/5"><th class="px-4 py-3">الجهاز</th><th class="px-4 py-3">IP</th><th class="px-4 py-3">ID</th><th class="px-4 py-3">التاريخ</th><th class="px-4 py-3"></th></tr></thead>
+                        <tbody id="connected-devices-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-support" class="hidden-view space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black text-white">تذاكر الدعم</h2>
+                <button onclick="openNewTicketModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-900/40 text-[10px]">+ تذكرة جديدة</button>
+            </div>
+            <div class="bg-slate-800/50 rounded-[2.5rem] border border-white/5 overflow-hidden">
+                <table class="w-full text-right text-[10px]">
+                    <thead class="bg-white/5 text-slate-400"><tr><th class="px-4 py-4 uppercase">#</th><th class="px-4 py-4">الموضوع</th><th class="px-4 py-4">التاريخ</th><th class="px-4 py-4">الحالة</th><th class="px-4 py-4"></th></tr></thead>
+                    <tbody id="tickets-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-add-merch" class="hidden-view space-y-6">
+             <div class="bg-amber-500/10 border border-amber-500/20 p-5 rounded-3xl mb-6">
+                <p class="text-amber-500 text-xs font-bold leading-relaxed flex items-start gap-3"><i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0"></i> تنبيه: التاجر الجديد يكون تحت مسؤوليتك الكاملة.</p>
+             </div>
+             <form id="add-merch-form" class="space-y-4">
+                <input type="text" placeholder="اسم التاجر" required class="w-full bg-slate-800 border border-white/5 rounded-2xl p-4 text-white text-sm outline-none focus:border-blue-500">
+                <input type="tel" placeholder="رقم الموبايل" required class="w-full bg-slate-800 border border-white/5 rounded-2xl p-4 text-white text-sm outline-none focus:border-blue-500">
+                <button type="submit" class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition">إضافة التاجر الآن</button>
+             </form>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[60] flex items-center justify-center hidden p-4">
+        <div class="bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 border border-white/10 shadow-2xl relative animate-scale-up">
+            <button onclick="closePaymentModal()" class="absolute left-6 top-6 text-slate-500 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <div class="text-center mb-8">
+                <h3 id="pay-title" class="text-2xl font-black text-white mb-2">خدمة</h3>
+                <div id="price-info" class="text-emerald-400 font-black text-lg font-mono">السعر: <span id="pay-price">0.00</span></div>
+            </div>
+            <form id="payment-form" class="space-y-6">
+                <input type="tel" id="pay-number" required placeholder="01xxxxxxxxx" class="w-full bg-slate-900 border border-white/5 rounded-2xl p-4 text-white text-lg font-black font-mono text-center outline-none focus:border-blue-500">
+                <div id="pay-amt-box" class="space-y-2 hidden">
+                    <input type="number" id="pay-amount-val" placeholder="المبلغ" class="w-full bg-slate-900 border border-white/5 rounded-2xl p-4 text-emerald-400 text-2xl font-black font-mono text-center outline-none">
+                </div>
+                <button type="submit" id="pay-confirm-btn" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-2xl active:scale-95 transition">تأكيد العملية</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="receipt-modal" class="fixed inset-0 bg-slate-900/95 z-[70] flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-slate-900 shadow-2xl animate-scale-up">
+             <div class="receipt-container" id="receipt-print-area">
+                <div class="receipt-header">
+                    <h2>الدكتور باي</h2>
+                    <p>إيصال دفع إلكتروني</p>
+                    <p id="re-date"></p>
+                </div>
+                <div class="receipt-success">تمت العملية بنجاح</div>
+                <div class="receipt-row"><span>الخدمة:</span> <strong id="receipt-service">...</strong></div>
+                <div class="receipt-row"><span>الرقم:</span> <strong id="re-phone">...</strong></div>
+                <div class="receipt-sep"></div>
+                <div class="receipt-row"><span>الإجمالي:</span> <strong id="re-total">0.00</strong></div>
+                <div class="receipt-row"><span>المرجع:</span> <strong id="re-ref">...</strong></div>
+             </div>
+             <div class="flex gap-2 mt-6">
+                <button onclick="printReceipt()" class="flex-1 bg-slate-900 text-white py-3 rounded-xl text-xs font-black">طباعة</button>
+                <button onclick="shareReceipt()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl text-xs font-black">مشاركة</button>
+                <button onclick="closeReceipt()" class="bg-slate-100 p-3 rounded-xl text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+             </div>
+        </div>
+    </div>
     </main>
 
     <!-- Bottom Nav -->
