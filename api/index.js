@@ -497,6 +497,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
     }
 
+    if (action === 'admin/update_user_device_limit' && method === 'POST') {
+        const { user_id, max_devices } = req.body;
+        await supabase.from('custom_users').update({ max_devices: Number(max_devices) }).eq('id', user_id);
+        return res.status(200).json({ success: true });
+    }
+
     if (action === 'admin/categories' && (method === 'GET' || method === 'POST' || method === 'DELETE')) {
         if (method === 'GET') {
             const { data } = await supabase.from('service_categories').select('*').order('sort_order', { ascending: true });
@@ -509,7 +515,8 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true });
         }
         if (method === 'DELETE') {
-            await supabase.from('service_categories').delete().eq('id', req.body.id);
+            const { id } = req.body;
+            await supabase.from('service_categories').delete().eq('id', id);
             return res.status(200).json({ success: true });
         }
     }
@@ -521,12 +528,22 @@ export default async function handler(req, res) {
         }
         if (method === 'POST') {
             const { id, ...data } = req.body;
-            if (id) await supabase.from('services').update(data).eq('id', id);
-            else await supabase.from('services').insert(data);
+            // Clean up fields to match schema
+            const dbData = {
+                name: data.name,
+                price: data.price,
+                company: data.company,
+                fields: data.fields || {},
+                is_active: data.is_active !== undefined ? data.is_active : true,
+                service_code: data.service_code || null
+            };
+            if (id) await supabase.from('services').update(dbData).eq('id', id);
+            else await supabase.from('services').insert(dbData);
             return res.status(200).json({ success: true });
         }
         if (method === 'DELETE') {
-            await supabase.from('services').delete().eq('id', req.body.id);
+            const { id } = req.body;
+            await supabase.from('services').delete().eq('id', id);
             return res.status(200).json({ success: true });
         }
     }

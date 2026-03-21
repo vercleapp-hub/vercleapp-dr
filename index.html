@@ -19,13 +19,13 @@
         }
 
         .light-theme {
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
             --text: #0f172a;
             --panel-bg: #ffffff;
-            --border: rgba(0, 0, 0, 0.08);
-            --header-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            --input-bg: #f8fafc;
-            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --border: rgba(0, 0, 0, 0.1);
+            --header-grad: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            --input-bg: #f1f5f9;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; }
@@ -49,11 +49,97 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
 
+        .sidebar { position: fixed; right: -320px; top: 0; width: 320px; height: 100vh; background: var(--bg); border-left: 1px solid var(--border); z-index: 100; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 25px; overflow-y: auto; box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
+        .sidebar.open { right: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 90; display: none; }
+        .overlay.active { display: block; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 16px; transition: all 0.2s; color: var(--text); font-size: 13px; font-weight: 700; width: 100%; text-align: right; }
+        .sidebar-item:hover { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .sidebar-item.active { background: #3b82f6; color: white; }
+
         @keyframes scale-up { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .animate-scale-up { animation: scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body class="bg-slate-900">
+
+    <!-- OVERLAY for Sidebar -->
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center p-1 shadow-lg shadow-blue-500/20">
+                    <img src="logo/logo.png" class="w-7 h-7 object-contain">
+                </div>
+                <div>
+                    <h2 class="text-white font-black text-lg leading-none">الدكتور باي</h2>
+                    <p class="text-[10px] text-emerald-400 font-mono font-black mt-1" id="side-balance">... ج.م</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" class="text-slate-500 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <!-- SEARCH SECTION -->
+        <div class="space-y-4 mb-8">
+            <div class="bg-slate-900/50 p-4 rounded-3xl border border-white/5">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 mr-1">بحث سريع بالعمليات</p>
+                <div class="relative">
+                    <input type="text" id="side-trans-search" placeholder="الفاتورة - الرقم - اسم العميل..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-10 py-3 text-xs text-white outline-none focus:border-blue-500 transition-all font-bold">
+                    <i data-lucide="search" class="absolute right-3 top-3 w-4 h-4 text-slate-600"></i>
+                </div>
+            </div>
+            <div class="bg-slate-900/50 p-4 rounded-3xl border border-white/5">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 mr-1">بحث متقدم للخدمات</p>
+                <div class="relative">
+                    <input type="text" id="side-srv-search" oninput="searchServices(this.value)" placeholder="اسم الخدمة أو كود الخدمة..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-10 py-3 text-xs text-white outline-none focus:border-emerald-500 transition-all font-bold">
+                    <i data-lucide="zap" class="absolute right-3 top-3 w-4 h-4 text-slate-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES LIST -->
+        <div class="space-y-1 mb-8">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 mr-3">أقسام الخدمات</p>
+            <nav class="space-y-0.5">
+                <button onclick="openServicesModal('شحن الموبيل')" class="sidebar-item"><i data-lucide="smartphone" class="w-4 h-4"></i> شحن الموبيل</button>
+                <button onclick="openCardsModal()" class="sidebar-item"><i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i> كروت الشحن</button>
+                <button onclick="openServicesModal('شحن الفكة')" class="sidebar-item"><i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i> شحن الفكة</button>
+                <button onclick="openServicesModal('تجديد الباقة')" class="sidebar-item"><i data-lucide="refresh-cw" class="w-4 h-4 text-blue-400"></i> تجديد الباقة</button>
+                <button onclick="openServicesModal('فواتير الموبيل')" class="sidebar-item"><i data-lucide="file-text" class="w-4 h-4"></i> فواتير الموبيل</button>
+                <button onclick="openServicesModal('الانترنت والارضي')" class="sidebar-item"><i data-lucide="hard-drive" class="w-4 h-4"></i> الانترنت والارضي</button>
+                <button onclick="openServicesModal('شحن المحافظ')" class="sidebar-item"><i data-lucide="wallet" class="w-4 h-4 text-indigo-400"></i> شحن المحافظ</button>
+                <button onclick="openServicesModal('التعليم')" class="sidebar-item"><i data-lucide="graduation-cap" class="w-4 h-4"></i> التعليم</button>
+                <button onclick="openServicesModal('المرافق العامة')" class="sidebar-item"><i data-lucide="utility-pole" class="w-4 h-4"></i> المرافق العامة</button>
+                <button onclick="openServicesModal('خدمات التأمين')" class="sidebar-item"><i data-lucide="shield-check" class="w-4 h-4"></i> خدمات التأمين</button>
+                <button onclick="openServicesModal('نقل وسياحة')" class="sidebar-item"><i data-lucide="plane" class="w-4 h-4"></i> نقل وسياحة</button>
+                <button onclick="openServicesModal('معاملات مالية')" class="sidebar-item"><i data-lucide="banknote" class="w-4 h-4"></i> معاملات مالية</button>
+                <button onclick="openServicesModal('الاون لاين')" class="sidebar-item"><i data-lucide="globe" class="w-4 h-4"></i> الاون لاين</button>
+                <button onclick="openServicesModal('اشتراكات وتبرعات')" class="sidebar-item"><i data-lucide="heart" class="w-4 h-4"></i> اشتراكات وتبرعات</button>
+                <button onclick="openServicesModal('اقساط وقروض')" class="sidebar-item"><i data-lucide="credit-card" class="w-4 h-4"></i> اقساط وقروض</button>
+                <button onclick="openServicesModal('خدمات حكومية')" class="sidebar-item"><i data-lucide="landmark" class="w-4 h-4"></i> خدمات حكومية</button>
+                <button onclick="openServicesModal('خدمات متنوعة')" class="sidebar-item"><i data-lucide="box" class="w-4 h-4"></i> خدمات متنوعة</button>
+                <button onclick="openServicesModal('خدمات التاجر')" class="sidebar-item"><i data-lucide="briefcase" class="w-4 h-4 highlight-blue"></i> خدمات التاجر</button>
+                <button onclick="openServicesModal('خدمات آخري')" class="sidebar-item"><i data-lucide="more-horizontal" class="w-4 h-4"></i> خدمات آخري</button>
+                <button onclick="openServicesModal('المتجر')" class="sidebar-item"><i data-lucide="shopping-bag" class="w-4 h-4"></i> المتجر</button>
+                <button onclick="openServicesModal('المسابقات')" class="sidebar-item"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> المسابقات</button>
+            </nav>
+        </div>
+
+        <!-- SIDEBAR FOOTER CS -->
+        <div class="mt-auto pt-6 border-t border-white/5 text-center">
+            <div class="bg-blue-600/10 p-4 rounded-3xl border border-blue-500/20">
+                <h4 class="text-white text-xs font-black mb-1">خدمة العملاء</h4>
+                <p class="text-blue-400 font-mono text-sm font-black mb-3">01063151472</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="https://wa.me/201063151472" class="p-2 bg-slate-900 rounded-xl text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-1"><i data-lucide="message-circle" class="w-3 h-3"></i> واتساب</a>
+                    <a href="tel:01063151472" class="p-2 bg-slate-900 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> مكالمة</a>
+                </div>
+            </div>
+            <p class="text-[9px] text-slate-600 mt-4 font-bold">DR PAY SYSTEM • ELDOCTOR</p>
+        </div>
+    </aside>
 
     <!-- PAYMENT MODAL -->
     <div id="payment-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
@@ -178,27 +264,36 @@
     </div>
 
     <!-- Header Content: Top Bar -->
-    <header id="main-header" class="glass-header p-5 rounded-b-[2.5rem] shadow-2xl fixed top-0 w-full z-40 border-b border-white/10 transition-colors duration-500">
-        <div class="flex justify-between items-center mb-6">
+    <header id="main-header" class="glass-header p-3 px-4 rounded-b-[2rem] shadow-xl fixed top-0 w-full z-40 border-b border-white/10 transition-colors duration-500">
+        <div class="flex justify-between items-center mb-3">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-0.5 shadow-lg transform -rotate-3 hover:rotate-0 transition-transform">
-                    <div class="w-full h-full bg-slate-900 rounded-[0.9rem] flex items-center justify-center overflow-hidden border border-white/20">
-                        <img src="logo/logo.png" alt="Dr Pay" class="w-8 h-8 object-contain">
+                <button onclick="toggleSidebar()" class="w-11 h-11 bg-slate-900/50 border border-white/10 rounded-2xl flex items-center justify-center text-blue-300 hover:text-white transition group relative active:scale-90">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                    <span class="absolute -bottom-1 w-1.5 h-1.5 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                </button>
+                <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 p-0.5 shadow-lg hidden sm:block">
+                    <div class="w-full h-full bg-slate-900 rounded-[0.8rem] flex items-center justify-center overflow-hidden border border-white/20">
+                        <img src="logo/logo.png" alt="Dr Pay" class="w-7 h-7 object-contain">
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-white font-black text-sm tracking-tight" id="header-shop-name">جاري التحميل...</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-white font-black text-sm tracking-tight" id="header-shop-name">جاري التحميل...</span>
+                        <i data-lucide="badge-check" class="w-3.5 h-3.5 text-blue-400 fill-blue-400/20"></i>
+                    </div>
                     <div class="flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span class="text-white/40 text-[9px] font-bold uppercase tracking-widest">متصل الآن</span>
+                        <span class="text-white/40 text-[9px] font-bold uppercase tracking-widest leading-none mt-0.5">تاجر معتمد بنجاح</span>
                     </div>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
-                <div class="text-left bg-gradient-to-l from-slate-900/60 to-transparent border-r border-white/10 pr-4 pl-2 py-1">
-                    <p class="text-[8px] text-blue-300 font-black uppercase tracking-[0.2em] mb-0.5 text-right">المحفظة</p>
-                    <p class="text-xl font-black text-white font-mono tracking-tighter" id="user-balance">0.00 <span class="text-[10px] text-emerald-400">ج.م</span></p>
+                <div class="text-left bg-gradient-to-l from-slate-900/60 to-transparent border-r border-white/10 pr-3 pl-1 py-0.5 relative group">
+                    <div class="absolute inset-0 bg-emerald-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <p class="text-[7px] text-blue-300 font-black uppercase tracking-[0.2em] mb-0 text-right relative z-10">الرصيد</p>
+                    <p class="text-lg font-black text-white font-mono tracking-tighter relative z-10" id="user-balance">0.00 <span class="text-[9px] text-emerald-400">ج.م</span></p>
                 </div>
                 <button onclick="openNotifications()" class="relative w-11 h-11 bg-slate-900/40 border border-white/10 rounded-2xl flex items-center justify-center text-blue-300 hover:bg-slate-800 transition active:scale-95 shadow-lg group">
                     <i data-lucide="bell" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
@@ -700,6 +795,14 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+             // Security Layer: Disable Right Click & Inspect Tools
+             document.addEventListener('contextmenu', e => e.preventDefault());
+             document.onkeydown = function(e) {
+                if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'U'.charCodeAt(0)))) {
+                    return false;
+                }
+             };
+
             const savedTheme = localStorage.getItem('drpay_theme') || 'dark';
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
@@ -722,6 +825,9 @@
             if(data) {
                 currentUser = data.user;
                 document.getElementById('user-balance').innerHTML = `${data.user.balance.toFixed(2)} <span class="text-[10px] text-emerald-300">ج.م</span>`;
+                if (document.getElementById('side-balance')) {
+                    document.getElementById('side-balance').innerHTML = `${data.user.balance.toFixed(2)} <span class="text-[10px] text-emerald-300">ج.م</span>`;
+                }
                 document.getElementById('header-shop-name').textContent = data.user.shop_name || data.user.name;
                 
                 // Settings Header / Profile Sub-page
@@ -939,24 +1045,41 @@
             }
             updateThemeUI();
         });
-        function toggleLang() { toast('سيتم تفعيل اللغة الإنجليزية قريباً'); }
 
         async function loadCategories() {
             const data = await fetchAPI('me/categories');
             const srvData = await fetchAPI('me/services');
             if (srvData && srvData.services) servicesList = srvData.services;
 
-            if(data) {
-                const grid = document.getElementById('categories-grid');
-                grid.innerHTML = `<div onclick="openCardsModal()" class="cat-card group rounded-[2.5rem] p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden h-32 md:h-40 cursor-pointer shadow-lg shadow-emerald-900/10">
-                    <div class="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all border border-emerald-500/30">
-                        <i data-lucide="ticket" class="w-6 h-6 md:w-8 md:h-8"></i>
-                    </div>
-                    <span class="text-[10px] md:text-sm font-black text-white group-hover:text-emerald-400 text-center transition-colors">كروت الشحن</span>
-                </div>`;
+            const grid = document.getElementById('categories-grid');
+            grid.innerHTML = '';
 
+            const staticCats = [
+                { name: 'شحن الموبيل', icon: 'smartphone', color: 'blue' },
+                { name: 'كروت الشحن', icon: 'ticket', color: 'emerald', special: 'cards' },
+                { name: 'شحن الفكة', icon: 'zap', color: 'yellow' },
+                { name: 'تجديد الباقة', icon: 'refresh-cw', color: 'blue' },
+                { name: 'فواتير الموبيل', icon: 'file-text', color: 'slate' },
+                { name: 'الانترنت والارضي', icon: 'hard-drive', color: 'indigo' },
+                { name: 'شحن المحافظ', icon: 'wallet', color: 'emerald' },
+                { name: 'المرافق العامة', icon: 'utility-pole', color: 'orange' },
+                { name: 'المتجر', icon: 'shopping-bag', color: 'pink' }
+            ];
+
+            staticCats.forEach(c => {
+                const onClick = c.special === 'cards' ? 'openCardsModal()' : `openServicesModal('${c.name}')`;
+                grid.innerHTML += `<div onclick="${onClick}" class="cat-card group rounded-[2.5rem] p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden h-32 md:h-40 cursor-pointer shadow-lg shadow-${c.color}-900/10">
+                    <div class="absolute inset-0 bg-${c.color}-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-${c.color}-500/20 text-${c.color}-400 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all border border-${c.color}-500/30">
+                        <i data-lucide="${c.icon}" class="w-6 h-6 md:w-8 md:h-8"></i>
+                    </div>
+                    <span class="text-[10px] md:text-sm font-black text-white group-hover:text-${c.color}-400 text-center transition-colors">${c.name}</span>
+                </div>`;
+            });
+
+            if(data && data.categories) {
                 data.categories.forEach(c => {
+                    if (staticCats.some(sc => sc.name === c.name)) return;
                     grid.innerHTML += `<div onclick="openServicesModal('${c.name}')" class="cat-card group rounded-[2.5rem] p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden h-32 md:h-40 cursor-pointer shadow-lg shadow-blue-900/10">
                         <div class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div class="w-12 h-12 md:w-16 md:h-16 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all border border-blue-500/30">
@@ -965,8 +1088,8 @@
                         <span class="text-[10px] md:text-sm font-black text-white group-hover:text-blue-400 text-center transition-colors">${c.name}</span>
                     </div>`;
                 });
-                lucide.createIcons();
             }
+            lucide.createIcons();
         }
 
         async function openServicesModal(catName) {
@@ -1005,6 +1128,29 @@
             modal.classList.remove('opacity-100'); card.classList.add('translate-y-full');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // Search logic for sidebar transactions
+        document.getElementById('side-trans-search').addEventListener('input', function(e) {
+            const q = e.target.value.toLowerCase().trim();
+            if(q.length > 2) {
+                if(document.getElementById('view-reports').classList.contains('hidden-view')) {
+                    openView('reports');
+                }
+                const list = document.getElementById('reports-list');
+                const items = list.querySelectorAll('.bg-slate-800');
+                items.forEach(item => {
+                    const txt = item.textContent.toLowerCase();
+                    item.style.display = txt.includes(q) ? 'flex' : 'none';
+                });
+            }
+        });
 
         // ===== CARDS =====
         async function openCardsModal() {

@@ -158,6 +158,7 @@ CREATE TABLE IF NOT EXISTS public.service_categories (
 -- 16. Add category to services
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES public.service_categories(id) ON DELETE SET NULL;
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS service_code TEXT;
 
 -- 17. Scratch Cards (Recharge Cards Inventory)
 CREATE TABLE IF NOT EXISTS public.scratch_cards (

@@ -189,17 +189,29 @@
         </form>
 
         <!-- ================= [ OTP VIEW (NEW DEVICE) ] ================= -->
-        <div id="otp-view" class="hidden space-y-6 relative z-10 animate-fade-in text-center">
-            <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <i data-lucide="shield-check" class="text-blue-400 w-8 h-8"></i>
+        <div id="otp-view" class="hidden space-y-8 relative z-10 animate-fade-in text-center">
+            <div class="space-y-2">
+                <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20 shadow-lg">
+                    <i data-lucide="shield-check" class="text-blue-400 w-10 h-10"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white px-2">حماية الحساب</h2>
+                <p class="text-[11px] text-slate-400 leading-relaxed px-6" id="otp-hint">تم إرسال كود الـ OTP إلي WhatsApp الرقم المسجل تنتهي بـ ...</p>
             </div>
-            <h2 class="text-xl font-black text-white">تأكيد أمان الجهاز</h2>
-            <p class="text-xs text-slate-400 leading-relaxed px-4">تم كشف جهاز جديد يحاول الدخول لحسابك. يرجى إدخال الكود المرسل للواتساب لتأكيد أنك صاحب الحساب.</p>
             
-            <input type="text" id="otp-code" maxlength="6" class="w-full text-center tracking-[1rem] py-4 bg-slate-900 rounded-2xl border border-slate-700 text-2xl font-black text-blue-400 outline-none focus:border-blue-500 transition-all font-mono" placeholder="000000">
+            <div class="flex justify-center gap-2 px-2" dir="ltr">
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <span class="text-slate-600 flex items-center">-</span>
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <input type="text" maxlength="1" class="otp-box w-12 h-14 bg-slate-900 border border-slate-700 rounded-xl text-center text-xl font-black text-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+            </div>
             
-            <button onclick="verifyLoginOTP()" id="otp-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">تأكيد الجهاز <i data-lucide="check" class="w-5 h-5"></i></button>
-            <button onclick="location.reload()" class="text-xs text-slate-500 hover:text-white font-bold transition">إلغاء والرجوع</button>
+            <div class="px-2">
+                <button onclick="verifyLoginOTP()" id="otp-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">تفعيل كود الوصول <i data-lucide="check" class="w-5 h-5"></i></button>
+                <button onclick="location.reload()" class="mt-4 text-xs text-slate-500 hover:text-white font-bold transition">إلغاء والرجوع لصفحة الدخول</button>
+            </div>
         </div>
 
         <div id="result"
@@ -307,10 +319,14 @@
                 
                 if (data.otp_required) {
                     window.loginData = { user_id: data.user?.id, ...secPayload, phone: data.phone };
-                    // If backend didn't send user_id, it will find it by phone in verify step
                     document.getElementById('login-form').classList.add('hidden');
                     document.getElementById('otp-view').classList.remove('hidden');
-                    showResult(true, data.message);
+                    
+                    // Set hint with last 4 digits
+                    const last4 = data.phone ? data.phone.slice(-4) : '...';
+                    document.getElementById('otp-hint').textContent = `تم إرسال كود الـ OTP إلي WhatsApp الرقم المسجل تنتهي بـ ${last4}`;
+                    
+                    setupOTPBoxes();
                     lucide.createIcons();
                     return;
                 }
@@ -334,13 +350,32 @@
             }
         });
 
+        function setupOTPBoxes() {
+            const boxes = document.querySelectorAll('.otp-box');
+            boxes.forEach((box, idx) => {
+                box.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1 && idx < boxes.length - 1) boxes[idx + 1].focus();
+                    if (e.target.value.length === 1 && idx === boxes.length - 1) verifyLoginOTP();
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && idx > 0) boxes[idx - 1].focus();
+                });
+            });
+            boxes[0].focus();
+        }
+
         async function verifyLoginOTP() {
-            const code = document.getElementById('otp-code').value;
-            if (code.length < 6) return showResult(false, "يرجى إدخال الكود المكون من 6 أرقام");
+            const boxes = document.querySelectorAll('.otp-box');
+            let code = "";
+            boxes.forEach(b => code += b.value);
+
+            if (code.length < 6) return; // Wait for full code
 
             const btn = document.getElementById('otp-btn');
+            if (btn.disabled) return;
             btn.disabled = true;
-            btn.innerHTML = 'جاري التحقق...';
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> جاري التحقق...`;
+            lucide.createIcons();
 
             try {
                 const res = await fetch('/api/index.js?action=verify_otp', {
@@ -365,14 +400,14 @@
                     localStorage.setItem('drpay_token', data.token);
                     setTimeout(() => {
                         window.location.href = (data.user.role === 'admin' || data.user.role === 'employee') ? 'admin.html' : 'index.html';
-                    }, 1500);
+                    }, 1000);
                 } else {
-                    throw new Error(data.error || "كود التحقق خاطئ");
+                    throw new Error(data.error || "كود التحقق خاطئ أو منتهي");
                 }
             } catch (error) {
                 showResult(false, error.message);
                 btn.disabled = false;
-                btn.innerHTML = 'تأكيد الجهاز <i data-lucide="check" class="w-5 h-5"></i>';
+                btn.innerHTML = 'تفعيل كود الوصول <i data-lucide="check" class="w-5 h-5"></i>';
                 lucide.createIcons();
             }
         }
