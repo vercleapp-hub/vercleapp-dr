@@ -1,0 +1,12 @@
+
+supabase
+
+Data API
+Project URL
+https://auwnsxmdksplftccysqu.supabase.co
+
+
+Publishable Key
+sb_publishable_sCsVKIE6tLVRgNnIRHzKSw_T5iQntHi
+
+

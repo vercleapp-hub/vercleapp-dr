@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr Pay - إضافة أدمن جديد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        input { background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(71, 85, 105, 0.5) !important; color: white !important; transition: all 0.2s; }
+        input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59,130,246,0.2) !important; outline: none; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative">
+
+    <!-- Background Accents -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-amber-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="w-full max-w-md mx-4 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-amber-500/30 border-2 border-amber-400/30 overflow-hidden">
+                <img src="logo/logo.png" alt="Dr Pay" class="w-full h-full object-contain">
+            </div>
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-300">إضافة أدمن جديد</h1>
+            <p class="text-slate-400 text-sm mt-2 font-bold">أنشئ حساب إدارة جديد للنظام</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="glass rounded-3xl p-8 shadow-2xl border border-amber-500/20">
+            <form id="admin-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">الاسم الكامل <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                        <input type="text" id="admin-name" required class="w-full rounded-xl px-4 py-3.5 pr-12 text-sm" placeholder="مثال: أحمد محمد">
+                        <i data-lucide="user" class="absolute right-4 top-3.5 w-5 h-5 text-slate-600"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">رقم الهاتف <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                        <input type="tel" id="admin-phone" required class="w-full rounded-xl px-4 py-3.5 pr-12 text-sm font-mono" placeholder="01XXXXXXXXX">
+                        <i data-lucide="smartphone" class="absolute right-4 top-3.5 w-5 h-5 text-slate-600"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">البريد الإلكتروني <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                        <input type="email" id="admin-email" required class="w-full rounded-xl px-4 py-3.5 pr-12 text-sm font-mono" placeholder="admin@drpay.com">
+                        <i data-lucide="mail" class="absolute right-4 top-3.5 w-5 h-5 text-slate-600"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">كلمة المرور <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                        <input type="password" id="admin-pass" required minlength="4" class="w-full rounded-xl px-4 py-3.5 pr-12 text-sm font-mono" placeholder="********">
+                        <i data-lucide="lock" class="absolute right-4 top-3.5 w-5 h-5 text-slate-600"></i>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-black py-4 rounded-xl transition shadow-[0_0_25px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2 text-base active:scale-95">
+                    إنشاء حساب الأدمن <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </button>
+
+                <div id="form-result" class="hidden text-center text-sm font-bold mt-3 p-4 rounded-xl"></div>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-white/5 text-center">
+                <a href="admin.html" class="text-slate-400 hover:text-blue-400 text-sm font-bold flex items-center justify-center gap-2 transition">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i> العودة للوحة التحكم
+                </a>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="mt-6 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center">
+            <p class="text-red-400 text-xs font-bold flex items-center justify-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                تنبيه: هذه الصفحة ستُحذف لاحقاً لأسباب أمنية. لا تشاركها مع أحد.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Check if current user is admin
+        const userStr = localStorage.getItem('drpay_user');
+        if (!userStr) window.location.href = 'login.html';
+        const cUser = JSON.parse(userStr);
+        if (cUser.role !== 'admin') { alert('غير مصرح لك بالوصول لهذه الصفحة.'); window.location.href = 'index.html'; }
+
+        document.getElementById('admin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> جاري الإنشاء...';
+
+            try {
+                const res = await fetch('/api?action=admin/create_admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('admin-name').value,
+                        phone: document.getElementById('admin-phone').value,
+                        email: document.getElementById('admin-email').value,
+                        password: document.getElementById('admin-pass').value
+                    })
+                });
+
+                const data = await res.json();
+                const resultDiv = document.getElementById('form-result');
+                resultDiv.classList.remove('hidden');
+
+                if (data.success) {
+                    resultDiv.className = 'text-center text-sm font-bold mt-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+                    resultDiv.innerHTML = '✓ تم إنشاء حساب الأدمن بنجاح! يمكنه الآن تسجيل الدخول.';
+                    document.getElementById('admin-form').reset();
+                } else {
+                    resultDiv.className = 'text-center text-sm font-bold mt-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400';
+                    resultDiv.textContent = data.error || 'حدث خطأ غير متوقع';
+                }
+            } catch (err) {
+                const resultDiv = document.getElementById('form-result');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'text-center text-sm font-bold mt-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400';
+                resultDiv.textContent = 'خطأ في الاتصال بالخادم';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'إنشاء حساب الأدمن <i data-lucide="shield-check" class="w-5 h-5 inline"></i>';
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>دكتور باي - لوحة التحكم المركزية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #020617; color: #f8fafc; }
+        .admin-glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 215, 0, 0.1); box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8); }
+        .admin-input { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 215, 0, 0.1); transition: all 0.3s ease; }
+        .admin-input:focus { border-color: #fbbf24; box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1); }
+        .gold-glow { text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        @keyframes drift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .animate-drift { background: linear-gradient(-45deg, #020617, #0f172a, #1a1c2c, #020617); background-size: 400% 400%; animation: drift 15s ease infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 animate-drift overflow-hidden">
+
+    <div class="fixed inset-0 pointer-events-none opacity-20">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+    </div>
+
+    <div class="w-full max-w-md admin-glass rounded-[2.5rem] p-10 relative z-10 border-t border-amber-500/20">
+        <div class="text-center mb-10">
+            <div class="w-24 h-24 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-3xl mx-auto mb-6 p-0.5 shadow-2xl shadow-amber-500/20">
+                <div class="w-full h-full bg-slate-950 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
+                    <img src="logo/logo.png" class="w-16 h-16 object-contain">
+                </div>
+            </div>
+            <h1 class="text-2xl font-black text-white gold-glow">لوحة تحكم المشرفين</h1>
+            <p class="text-[10px] text-amber-500/70 font-bold uppercase tracking-[0.2em] mt-2">Central Management Portal</p>
+        </div>
+
+        <form id="admin-login-form" class="space-y-6">
+            <div class="space-y-4">
+                <div class="relative group">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mr-1">رقم الهاتف / البريد</label>
+                    <input type="text" id="phone" required class="w-full admin-input rounded-2xl px-5 py-4 text-sm outline-none text-white font-mono placeholder-slate-600" placeholder="010XXXXXXXX">
+                </div>
+                <div class="relative group">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mr-1">كلمة المرور الإدارية</label>
+                    <input type="password" id="password" required class="w-full admin-input rounded-2xl px-5 py-4 text-sm outline-none text-white font-mono placeholder-slate-600" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" id="login-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-black py-4 rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 flex items-center justify-center gap-3">
+                تأكيد هويتك كمسؤول <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </button>
+        </form>
+
+        <div id="otp-view" class="hidden space-y-6 text-center animate-in fade-in zoom-in duration-300">
+            <p class="text-sm text-slate-400">يرجى إدخال كود الأمان المرسل للإدارة</p>
+            <input type="text" id="otp-code" maxlength="6" class="w-full text-center tracking-[1rem] py-5 bg-slate-950 rounded-2xl border border-amber-500/30 text-2xl font-black text-amber-500 outline-none" placeholder="000000">
+            <button onclick="verifyOTP()" id="otp-btn" class="w-full bg-amber-600 text-white py-4 rounded-2xl font-black shadow-lg">تأكيد الدخول الآمن</button>
+        </div>
+
+        <div id="result" class="mt-8 text-center hidden p-4 rounded-2xl text-xs font-bold border backdrop-blur-md"></div>
+
+        <div class="mt-10 pt-6 border-t border-white/5 text-center px-4">
+            <p class="text-[10px] text-slate-500 font-bold mb-4">هذه الصفحة مخصصة فقط لمسؤولي نظام الدكتور باي</p>
+            <div class="flex items-center justify-center gap-4">
+                <a href="login.html" class="text-[10px] text-blue-400 hover:text-blue-300 font-black flex items-center gap-1.5 transition">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i> دخول التجار
+                </a>
+                <span class="w-1 h-1 bg-slate-800 rounded-full"></span>
+                <a href="admin-register.html" class="text-[10px] text-amber-500/70 hover:text-amber-400 font-black flex items-center gap-1.5 transition">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> تسجيل مسؤول جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        window.loginData = null;
+
+        function showResult(isSuccess, message) {
+            const div = document.getElementById('result');
+            div.className = `mt-8 text-center p-4 rounded-2xl text-xs font-bold border backdrop-blur-md ${isSuccess ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-red-500/10 border-red-500/50 text-red-400'}`;
+            div.textContent = message;
+            div.classList.remove('hidden');
+        }
+
+        async function getSecurity() {
+            return new Promise((resolve) => {
+                navigator.geolocation.getCurrentPosition(
+                    p => resolve({ location: { lat: p.coords.latitude, lng: p.coords.longitude }, device_id: 'ADM-' + Date.now(), device_info: { agent: navigator.userAgent } }),
+                    () => resolve({ location: null, device_id: 'ADM-' + Date.now(), device_info: { agent: navigator.userAgent } })
+                );
+            });
+        }
+
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="animate-spin w-5 h-5"></i> جاري التحقق...`;
+            lucide.createIcons();
+
+            try {
+                const sec = await getSecurity();
+                const res = await fetch('/api/index.js?action=login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        identifier: document.getElementById('phone').value, 
+                        password: document.getElementById('password').value,
+                        expected_role: 'admin',
+                        ...sec
+                    })
+                });
+                const data = await res.json();
+
+                if (data.otp_required) {
+                    window.loginData = { phone: data.phone, ...sec };
+                    document.getElementById('admin-login-form').classList.add('hidden');
+                    document.getElementById('otp-view').classList.remove('hidden');
+                    showResult(true, "تم إرسال كود التحقق الأمني");
+                    return;
+                }
+
+                if (data.success) {
+                    showResult(true, "تم الدخول بنجاح كمسؤول بنجاح");
+                    localStorage.setItem('drpay_user', JSON.stringify(data.user));
+                    localStorage.setItem('drpay_token', data.token);
+                    setTimeout(() => window.location.href = 'admin.html', 1000);
+                } else {
+                    throw new Error(data.error || "خطأ في الدخول");
+                }
+            } catch (err) {
+                showResult(false, err.message);
+                btn.disabled = false;
+                btn.innerHTML = `تأكيد هويتك كمسؤول <i data-lucide="shield-check" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+            }
+        });
+
+        async function verifyOTP() {
+            const code = document.getElementById('otp-code').value;
+            const btn = document.getElementById('otp-btn');
+            btn.disabled = true; btn.textContent = 'جاري التوثيق...';
+
+            const res = await fetch('/api/index.js?action=verify_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: window.loginData.phone,
+                    code: code,
+                    purpose: 'new_device',
+                    login_data: window.loginData
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('drpay_user', JSON.stringify(data.user));
+                localStorage.setItem('drpay_token', data.token);
+                window.location.href = 'admin.html';
+            } else {
+                showResult(false, "كود الأمان غير صحيح");
+                btn.disabled = false; btn.textContent = 'تأكيد الدخول الآمن';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إضافة أدمن تجريبي - Dr Pay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Tajawal', sans-serif; background: #0f172a; }</style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-slate-800 p-8 rounded-[2.5rem] border border-white/5 shadow-2xl w-full max-w-md">
+        <h1 class="text-2xl font-black text-white mb-2 text-center">إضافة مسؤول نظام تجريبي</h1>
+        <p class="text-slate-400 text-sm text-center mb-6">هذا الملف مخصص للتجربة فقط ويجب حذفه بعد إنشاء حساب الأدمن الأول.</p>
+        
+        <form id="add-admin-form" class="space-y-4">
+            <input type="text" id="name" placeholder="الاسم الكامل" required class="w-full bg-slate-900 border border-slate-700/50 rounded-2xl p-4 text-white outline-none focus:border-blue-500">
+            <input type="text" id="phone" placeholder="رقم الهاتف" required class="w-full bg-slate-900 border border-slate-700/50 rounded-2xl p-4 text-white outline-none focus:border-blue-500">
+            <input type="text" id="shop" placeholder="اسم المحل / الإدارة" required class="w-full bg-slate-900 border border-slate-700/50 rounded-2xl p-4 text-white outline-none focus:border-blue-500">
+            <input type="password" id="pass" placeholder="كلمة المرور" required class="w-full bg-slate-900 border border-slate-700/50 rounded-2xl p-4 text-white outline-none focus:border-blue-500">
+            
+            <div class="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl mb-4">
+                <p class="text-xs text-yellow-400 font-bold">ملاحظة: سيتم منح هذا الحساب صلاحيات (admin) كاملة وتعديل رصيده فوراً.</p>
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition shadow-xl active:scale-95">إنشاء حساب الأدمن الآن</button>
+        </form>
+        
+        <div id="result" class="mt-6 hidden"></div>
+    </div>
+
+    <script>
+        document.getElementById('add-admin-form').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const resDiv = document.getElementById('result');
+            btn.disabled = true; btn.textContent = 'جاري التنفيذ...';
+            
+            const payload = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                shop_name: document.getElementById('shop').value,
+                password: document.getElementById('pass').value,
+                role: 'admin',
+                national_id: '00000000000000', // placeholder for test
+                province: 'الإدارة العامة'
+            };
+
+            try {
+                // We use the normal register endpoint but force admin role from here 
+                // In production, the backend register_admin validates the secret code.
+                // This is a direct test skip using current internal logic if possible.
+                const response = await fetch('/api/index.js?action=register_admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...payload, secret_code: 'DRPAY-ADMIN-2025' })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    resDiv.className = 'mt-6 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-emerald-400 text-sm font-bold text-center';
+                    resDiv.innerHTML = '🎉 تم إنشاء حساب المسؤول بنجاح! <br> يمكنك الآن مسح هذا الملف والتوجه لصفحة <a href="admin-login.html" class="underline">تسجيل دخول الأدمن</a>';
+                    resDiv.classList.remove('hidden');
+                    e.target.reset();
+                } else {
+                    throw new Error(data.error || 'فشلت العملية');
+                }
+            } catch (err) {
+                resDiv.className = 'mt-6 bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-400 text-sm font-bold text-center';
+                resDiv.textContent = '❌ خطأ: ' + err.message;
+                resDiv.classList.remove('hidden');
+            }
+            btn.disabled = false; btn.textContent = 'إنشاء حساب الأدمن الآن';
+        });
+    </script>
+</body>
+</html>

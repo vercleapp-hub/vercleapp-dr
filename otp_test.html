@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نظام OTP - Dr Pay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: white; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl">
+        <h1 class="text-2xl font-black text-center mb-6">اختبار نظام الدخول عبر الواتساب (OTP)</h1>
+        
+        <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl mb-6 text-sm">
+            <p class="text-blue-400 font-bold mb-2">تنبيه هام:</p>
+            <ul class="list-disc list-inside text-slate-400 space-y-1">
+                <li>يجب أن يحتوي حسابك على واتساب بيزنس على قالب معتمد باسم <code class="text-white">otp_verification</code></li>
+                <li>القالب يجب أن يدعم متغير واحد (Code)</li>
+                <li>تأكد أن الهاتف المدخل مرتبط بواتساب فعال</li>
+            </ul>
+        </div>
+
+        <form id="otp-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-2 mr-2">رقم الهاتف (الواتساب)</label>
+                <input type="text" id="phone" placeholder="مثال: 01234567890" required class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white outline-none focus:border-blue-500 transition-all text-center text-lg font-mono">
+            </div>
+            <button type="submit" id="send-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                إرسال الكود للاختبار الآن
+            </button>
+        </form>
+
+        <div id="result" class="mt-8 hidden p-6 rounded-2xl border border-white/10 bg-slate-900/50">
+            <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">نتيجة المحاولة:</h3>
+            <pre id="result-text" class="text-[10px] text-emerald-400 overflow-x-auto font-mono"></pre>
+            <div id="code-display" class="mt-4 pt-4 border-t border-white/5 text-center hidden">
+                <p class="text-[10px] text-slate-500 mb-1">الكود الذي تم إنشاؤه:</p>
+                <div class="text-3xl font-black text-white tracking-[0.5em]" id="sent-code">------</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('otp-form').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const btn = document.getElementById('send-btn');
+            const resArea = document.getElementById('result');
+            const resText = document.getElementById('result-text');
+            const codeDisp = document.getElementById('code-display');
+            const sentCode = document.getElementById('sent-code');
+            
+            btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+            resArea.classList.add('hidden');
+            codeDisp.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/index.js?action=test_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: document.getElementById('phone').value })
+                });
+                
+                const data = await response.json();
+                resArea.classList.remove('hidden');
+                resText.textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    codeDisp.classList.remove('hidden');
+                    sentCode.textContent = data.code_sent;
+                }
+            } catch (err) {
+                resArea.classList.remove('hidden');
+                resText.textContent = 'Error: ' + err.message;
+            }
+            btn.disabled = false; btn.textContent = 'إرسال الكود للاختبار الآن';
+        });
+    </script>
+</body>
+</html>
