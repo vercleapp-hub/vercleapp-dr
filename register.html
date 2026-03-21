@@ -120,20 +120,20 @@
                 <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">صور البطاقة الشخصية</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-2">
-                        <div id="cam-box-front" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center cursor-pointer" onclick="openCamera('id-front')">
+                        <div id="cam-box-front" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all" onclick="showChoice('id-front')">
                             <img id="prev-id-front" class="absolute inset-0 w-full h-full object-cover hidden">
                             <div id="icon-id-front" class="text-center">
-                                <i data-lucide="camera" class="w-6 h-6 mx-auto mb-1 text-slate-500"></i>
-                                <span class="text-[9px] font-bold text-slate-400">وجه البطاقة</span>
+                                <i data-lucide="image-plus" class="w-7 h-7 mx-auto mb-2 text-slate-500 group-hover:text-emerald-500 transition-colors"></i>
+                                <span class="text-[10px] font-bold text-slate-400 block">وجه البطاقة</span>
                             </div>
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <div id="cam-box-back" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center cursor-pointer" onclick="openCamera('id-back')">
+                        <div id="cam-box-back" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all" onclick="showChoice('id-back')">
                             <img id="prev-id-back" class="absolute inset-0 w-full h-full object-cover hidden">
                             <div id="icon-id-back" class="text-center">
-                                <i data-lucide="camera" class="w-6 h-6 mx-auto mb-1 text-slate-500"></i>
-                                <span class="text-[9px] font-bold text-slate-400">ظهر البطاقة</span>
+                                <i data-lucide="image-plus" class="w-7 h-7 mx-auto mb-2 text-slate-500 group-hover:text-emerald-500 transition-colors"></i>
+                                <span class="text-[10px] font-bold text-slate-400 block">ظهر البطاقة</span>
                             </div>
                         </div>
                     </div>
@@ -145,21 +145,35 @@
             </button>
         </form>
 
-        <!-- CAMERA MODAL -->
-        <div id="cam-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex flex-col items-center justify-center p-4">
-            <video id="video-stream" autoplay playsinline class="w-full max-w-sm rounded-[2rem] border-2 border-white/20 shadow-2xl overflow-hidden bg-slate-900"></video>
-            <div class="mt-8 flex gap-4 items-center">
-                <button onclick="closeCamera()" class="bg-slate-800 text-white p-4 rounded-full border border-white/10 hover:bg-slate-700 transition" title="إلغاء">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-                <button onclick="takeSnapshot()" class="bg-emerald-500 text-white p-6 rounded-full shadow-2xl transform active:scale-90 transition hover:bg-emerald-400" title="التقاط صورة">
-                    <i data-lucide="camera" class="w-8 h-8"></i>
-                </button>
-                <button onclick="document.getElementById('file-input').click()" class="bg-blue-600 text-white p-4 rounded-full border border-white/10 hover:bg-blue-500 transition" title="رفع من الملفات">
-                    <i data-lucide="upload" class="w-6 h-6"></i>
-                </button>
+        <!-- CHOICE MODAL -->
+        <div id="choice-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] hidden flex items-center justify-center p-6">
+            <div class="bg-slate-900 border border-white/10 w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl animate-scale-up">
+                <div class="text-center mb-6">
+                    <h3 class="text-lg font-black text-white">إضافة صورة</h3>
+                    <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">اختر المصدر المناسب لك</p>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="startCameraFlow()" class="flex items-center gap-4 bg-emerald-600/10 border border-emerald-500/20 p-5 rounded-2xl hover:bg-emerald-600/20 transition-all text-emerald-400">
+                        <div class="bg-emerald-500 text-white p-3 rounded-xl shadow-lg shadow-emerald-500/20"><i data-lucide="camera"></i></div>
+                        <span class="font-bold text-sm text-white">فتح الكاميرا</span>
+                    </button>
+                    <button onclick="document.getElementById('file-input').click()" class="flex items-center gap-4 bg-blue-600/10 border border-blue-500/20 p-5 rounded-2xl hover:bg-blue-600/20 transition-all text-blue-400">
+                        <div class="bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-500/20"><i data-lucide="upload"></i></div>
+                        <span class="font-bold text-sm text-white">من الملفات</span>
+                    </button>
+                </div>
+                <button onclick="closeChoice()" class="w-full mt-6 py-4 text-xs font-bold text-slate-500 hover:text-white transition uppercase tracking-widest">إلغاء</button>
             </div>
-            <p class="mt-4 text-xs text-slate-400 font-bold">ضع البطاقة داخل الإطار أو اختر صورة من جهازك</p>
+        </div>
+
+        <!-- CAMERA MODAL -->
+        <div id="cam-modal" class="fixed inset-0 bg-black/95 z-[120] hidden flex flex-col items-center justify-center p-4">
+            <video id="video-stream" autoplay playsinline class="w-full max-w-sm rounded-[2.5rem] border-2 border-white/10 shadow-2xl bg-black"></video>
+            <div class="mt-8 flex gap-6 items-center">
+                <button onclick="closeCamera()" class="bg-slate-800 text-white p-5 rounded-full hover:bg-slate-700 transition"><i data-lucide="x"></i></button>
+                <button onclick="takeSnapshot()" class="bg-emerald-500 text-white p-7 rounded-full shadow-2xl shadow-emerald-500/40 active:scale-90 transition"><i data-lucide="camera" class="w-8 h-8"></i></button>
+            </div>
+            <p class="mt-6 text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">التقط صورة واضحة داخل الإطار</p>
             <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
         </div>
 
@@ -243,18 +257,25 @@
             }
         });
 
-        // Camera Logic
-        async function openCamera(target) {
+        function showChoice(target) {
             currentTarget = target;
-            document.getElementById('cam-modal').classList.remove('hidden');
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                document.getElementById('video-stream').srcObject = stream;
-            } catch(err) {
-                alert("لم نستطع فتح الكاميرا. يرجى التأكد من الصلاحيات.");
-                closeCamera();
-            }
+            document.getElementById('choice-modal').classList.remove('hidden');
         }
+        function closeChoice() {
+            document.getElementById('choice-modal').classList.add('hidden');
+        }
+
+        async function startCameraFlow() {
+            closeChoice();
+            const modal = document.getElementById('cam-modal');
+            const video = document.getElementById('video-stream');
+            modal.classList.remove('hidden');
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+            } catch(e) { alert('عذراً، فشل تشغيل الكاميرا'); closeCamera(); }
+        }
+
         function closeCamera() {
             if(stream) stream.getTracks().forEach(t => t.stop());
             document.getElementById('cam-modal').classList.add('hidden');
@@ -291,7 +312,7 @@
                 if(icon) icon.classList.add('hidden');
                 window.registrationData[currentTarget.replace('-','_')] = e.target.result;
                 
-                closeCamera();
+                closeChoice(); // Close choice if selected file
             };
             reader.readAsDataURL(file);
         }

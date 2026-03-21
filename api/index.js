@@ -6,12 +6,27 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY || 'sb_publishable_7h7u-Fpfwq7RU_clkAk3uA_RJJDYdVX'
 );
 
+// Helper to standardize Egyptian phone numbers (Last 11 digits: 01xxxxxxxxx)
+function standardizePhone(phone) {
+    if (!phone) return "";
+    let clean = phone.replace(/\D/g, '');
+    if (clean.length > 11) {
+        // If it has country code (e.g. 2010...), take last 11
+        return '0' + clean.slice(-10);
+    }
+    if (clean.length === 10 && !clean.startsWith('0')) {
+        // If 10 digits (e.g. 10...), add 0
+        return '0' + clean;
+    }
+    return clean;
+}
+
 const ULTRA_MSG_INSTANCE = "instance166591";
 const ULTRA_MSG_TOKEN = "merz7515ky1dxc2v";
 
 async function sendWhatsAppOTP(phone, code) {
   try {
-    const cleanPhone = phone.replace(/\D/g, ''); 
+    const cleanPhone = standardizePhone(phone); 
     const to = cleanPhone.startsWith('2') ? cleanPhone : `2${cleanPhone}`;
     const body = `رمز التحقق الخاص بك في الدكتور باي هو: ${code}\nيرجى عدم مشاركة هذا الرمز مع أي شخص.`;
     
@@ -47,13 +62,15 @@ export default async function handler(req, res) {
     const { data: session } = await supabase.from('sessions').select('user_id').eq('session_id', token).single();
     if (!session) return null;
     const { data: user } = await supabase.from('custom_users').select('*').eq('id', session.user_id).single();
+    if (!user || user.status !== 'active') return null;
     return user;
   };
 
   try {
     if (action === 'check_user_existence' && method === 'POST') {
         const { phone, national_id } = req.body;
-        const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${phone},national_id.eq.${national_id}`).single();
+        const cleanPhone = standardizePhone(phone);
+        const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${cleanPhone},national_id.eq.${national_id}`).single();
         if (existing) return res.status(400).json({ error: 'عذراً، هذا الحساب (رقم الهاتف أو الرقم القومي) مسجل مسبقاً لدينا.' });
         return res.status(200).json({ success: true, message: 'البيانات متاحة، يمكنك إكمال التسجيل.' });
     }
@@ -61,23 +78,26 @@ export default async function handler(req, res) {
     if (action === 'test_otp' && method === 'POST') {
         const { phone } = req.body;
         if (!phone) return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
+        const cleanPhone = standardizePhone(phone);
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const waResult = await sendWhatsAppOTP(phone, code);
-        return res.status(200).json({ success: true, message: 'تمت محاولة الإرسال عبر واتساب', result: waResult, code_sent: code });
+        const waResult = await sendWhatsAppOTP(cleanPhone, code);
+        return res.status(200).json({ success: true, message: 'تمت محاولة الإرسال عبر واتساب', result: waResult, code_sent: code, phone_standardized: cleanPhone });
     }
 
     if (action === 'login' && method === 'POST') {
       const { identifier, password, device_id, location, device_info, otp, otp_purpose, expected_role } = req.body;
       
       if (otp) {
+        const cleanIdentifier = standardizePhone(identifier);
         const { data: valid } = await supabase.from('otp_verifications')
-          .select('*').eq('phone', identifier).eq('code', otp).eq('purpose', otp_purpose).eq('is_verified', false)
-          .gt('created_at', new Date(Date.now() - 5*60*1000).toISOString()).single();
+          .select('*').eq('phone', cleanIdentifier).eq('code', otp).eq('purpose', otp_purpose).eq('is_verified', false)
+          .gt('created_at', new Date(Date.now() - 15*60*1000).toISOString()).single();
         if (!valid) return res.status(400).json({ error: 'كود التحقق خاطئ أو منتهي' });
         await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
       }
 
-      const { data: user } = await supabase.from('custom_users').select('*').or(`email.eq.${identifier},phone.eq.${identifier}`).single();
+      const cleanID = standardizePhone(identifier);
+      const { data: user } = await supabase.from('custom_users').select('*').or(`email.eq.${identifier},phone.eq.${cleanID}`).single();
       if (!user || user.password !== password) return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
       if (user.status !== 'active') return res.status(403).json({ error: 'الحساب محظور' });
 
@@ -95,10 +115,11 @@ export default async function handler(req, res) {
       if (!isKnown && !otp) {
         const max = user.max_devices || 2;
         if (userDevices?.length >= max) return res.status(403).json({ error: 'تجاوزت الحد الأقصى للأجهزة المسموح بها ('+max+'). يرجى التواصل مع الإدارة.' });
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        await supabase.from('otp_verifications').insert({ phone: user.phone, code, purpose: 'new_device' });
-        await sendWhatsAppOTP(user.phone, code);
-        return res.status(200).json({ otp_required: true, purpose: 'new_device', phone: user.phone, message: 'تم إرسال كود التحقق لجهاز جديد' });
+        const cleanPhone = user.phone.replace(/\D/g, '');
+        const { error: insError } = await supabase.from('otp_verifications').insert({ phone: cleanPhone, code, purpose: 'new_device' });
+        if (insError) throw insError;
+        await sendWhatsAppOTP(cleanPhone, code);
+        return res.status(200).json({ otp_required: true, purpose: 'new_device', phone: cleanPhone, message: 'تم إرسال كود التحقق لجهاز جديد' });
       }
 
       if (!isKnown) await supabase.from('devices').insert({ user_id: user.id, device_fingerprint: device_id, device_info, location });
@@ -126,11 +147,13 @@ export default async function handler(req, res) {
             await supabase.from('notifications').insert({ user_id: user.id, title: 'مرحباً بك', message: 'نورت لوحة التحكم يا مدير!' });
             return res.status(200).json({ success: true, user });
         } else {
-            const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${phone},email.eq.${email}`).single();
+        const cleanPhone = standardizePhone(phone);
+        const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${cleanPhone},email.eq.${email}`).single();
             if (existing) return res.status(400).json({ error: 'المسؤول موجود بالفعل' });
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            await supabase.from('otp_verifications').insert({ phone, code, purpose: 'register_admin' });
-            await sendWhatsAppOTP(phone, code);
+            const { error: insError } = await supabase.from('otp_verifications').insert({ phone: cleanPhone, code, purpose: 'register_admin' });
+            if (insError) throw insError;
+            await sendWhatsAppOTP(cleanPhone, code);
             return res.status(200).json({ otp_required: true, message: 'كود التحقق مرسل للواتساب للإدارة' });
         }
     }
@@ -161,11 +184,13 @@ export default async function handler(req, res) {
         await supabase.from('wallets').insert({ user_id: user.id, balance: 0, golden_points: 0, credit_limit: 0 });
         return res.status(200).json({ success: true, user });
       } else {
-        const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${phone},email.eq.${email},national_id.eq.${national_id}`).single();
+        const cleanPhone = standardizePhone(phone);
+        const { data: existing } = await supabase.from('custom_users').select('id').or(`phone.eq.${cleanPhone},email.eq.${email},national_id.eq.${national_id}`).single();
         if (existing) return res.status(400).json({ error: 'عذراً، هذا الحساب (الهاتف أو الإيميل أو الرقم القومي) مسجل لدينا بالفعل.' });
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        await supabase.from('otp_verifications').insert({ phone, code, purpose: 'register' });
-        await sendWhatsAppOTP(phone, code);
+        const { error: insError } = await supabase.from('otp_verifications').insert({ phone: cleanPhone, code, purpose: 'register' });
+        if (insError) throw insError;
+        await sendWhatsAppOTP(cleanPhone, code);
         return res.status(200).json({ otp_required: true, message: 'كود التحقق مرسل للواتساب' });
       }
     }
@@ -174,7 +199,7 @@ export default async function handler(req, res) {
         const user = await getAuthUser();
         if (!user) return res.status(401).json({ error: 'منتهي' });
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        await supabase.from('otp_verifications').insert({ phone: user.phone, code, purpose: 'new_device' });
+        await supabase.from('otp_verifications').insert({ phone: standardizePhone(user.phone), code, purpose: 'new_device' });
         return res.status(200).json({ success: true, code });
     }
 
@@ -208,18 +233,21 @@ export default async function handler(req, res) {
 
     if (action === 'request_password_reset' && method === 'POST') {
         const { national_id, phone } = req.body;
-        const { data: user } = await supabase.from('custom_users').select('*').eq('phone', phone).eq('national_id', national_id).single();
+        const cleanPhone = standardizePhone(phone);
+        const { data: user } = await supabase.from('custom_users').select('*').eq('phone', cleanPhone).eq('national_id', national_id).single();
         if(!user) return res.status(400).json({ error: 'عذراً، البيانات المدخلة غير صحيحة أو غير مسجلة لدينا.' });
         
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        await supabase.from('otp_verifications').insert({ phone: user.phone, code, purpose: 'password_reset' });
-        await sendWhatsAppOTP(user.phone, code);
+        const { error: insError } = await supabase.from('otp_verifications').insert({ phone: cleanPhone, code, purpose: 'password_reset' });
+        if (insError) throw insError;
+        await sendWhatsAppOTP(cleanPhone, code);
         return res.status(200).json({ success: true, message: 'كود التحقق مرسل للواتساب' });
     }
 
     if (action === 'verify_password_reset_otp' && method === 'POST') {
         const { phone, code } = req.body;
-        const { data: valid } = await supabase.from('otp_verifications').select('*').eq('phone', phone).eq('code', code).eq('purpose', 'password_reset').eq('is_verified', false).order('created_at', { ascending: false }).limit(1).single();
+        const cleanPhone = standardizePhone(phone);
+        const { data: valid } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).eq('code', code).eq('purpose', 'password_reset').eq('is_verified', false).order('created_at', { ascending: false }).limit(1).single();
         if (!valid) return res.status(400).json({ error: 'كود التحقق غير صحيح أو منتهي' });
         await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
         return res.status(200).json({ success: true });
@@ -228,15 +256,44 @@ export default async function handler(req, res) {
     if (action === 'change_password_final' && method === 'POST') {
         const { phone, password } = req.body;
         // Simple update by phone (assume OTP was verified just before)
-        await supabase.from('custom_users').update({ password }).eq('phone', phone);
+        await supabase.from('custom_users').update({ password }).eq('phone', standardizePhone(phone));
         return res.status(200).json({ success: true });
     }
 
     if (action === 'verify_otp' && method === 'POST') {
         const { phone, code, purpose, login_data, registration_data } = req.body;
-        const { data: valid } = await supabase.from('otp_verifications').select('*').eq('phone', phone).eq('code', code).eq('purpose', purpose).eq('is_verified', false).order('created_at', { ascending: false }).limit(1).single();
-        if (!valid) return res.status(400).json({ error: 'كود التحقق خاطئ أو منتهي' });
-        await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
+        const cleanPhone = standardizePhone(phone);
+        
+        // Debug: Log the search criteria
+        console.log(`Verifying OTP: Phone=${cleanPhone}, Code=${code}, Purpose=${purpose}`);
+
+        const { data: valid, error: findError } = await supabase.from('otp_verifications')
+            .select('*')
+            .eq('phone', cleanPhone)
+            .eq('code', code.trim())
+            .eq('purpose', purpose)
+            .eq('is_verified', false)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (findError || !valid) {
+            console.error("OTP Find Error:", findError);
+            const { data: recent } = await supabase.from('otp_verifications').select('*').eq('phone', cleanPhone).order('created_at', { ascending: false }).limit(3);
+            return res.status(400).json({ 
+                error: 'كود التحقق خاطئ أو منتهي', 
+                details: findError ? findError.message : 'No matching record found',
+                debug: { 
+                    searchedPhone: cleanPhone, 
+                    searchedCode: code.trim(),
+                    searchedPurpose: purpose,
+                    recentCodesForThisPhone: recent ? recent.map(r => ({ code: r.code, p: r.purpose, verified: r.is_verified, at: r.created_at })) : []
+                } 
+            });
+        }
+
+        const { error: updateError } = await supabase.from('otp_verifications').update({ is_verified: true }).eq('id', valid.id);
+        if (updateError) throw updateError;
 
         if ((purpose === 'register' || purpose === 'register_admin') && registration_data) {
             const dbData = {
