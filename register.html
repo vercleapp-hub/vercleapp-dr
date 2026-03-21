@@ -40,289 +40,306 @@
             <div class="relative mb-4">
                 <div class="absolute inset-0 bg-emerald-500 rounded-full blur-[20px] opacity-50 animate-pulse"></div>
                 <div class="w-20 h-20 rounded-[1.5rem] flex items-center justify-center shadow-lg shadow-emerald-500/20 relative z-10 border border-white/20 overflow-hidden">
-                    <img src="logo/logo.png" alt="Dr Pay Logo" class="w-full h-full object-contain">
+                    <img src="logo/logo.png" alt="Dr Pay Logo" class="w-full h-full object-contain text-white">
                 </div>
             </div>
-            <h1 class="text-2xl font-black text-white mb-1">إنشاء حساب تاجر</h1>
+            <h1 class="text-2xl font-black text-white mb-1">فتح حساب تاجر جديد</h1>
+            <p id="step-desc" class="text-xs text-slate-400 font-bold">يرجى إدخال البيانات الأساسية للبدء</p>
         </div>
 
-        <form id="register-form" class="space-y-5 relative z-10">
-            <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700/50 space-y-4">
+        <!-- STEP 1: INITIAL CHECK -->
+        <form id="step1-form" class="space-y-5 relative z-10">
+            <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 space-y-4">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">الاسم بالكامل <span class="text-red-400">*</span></label>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2">رقم الهاتف المحمول <span class="text-red-400">*</span></label>
+                    <input type="tel" id="reg-phone" required class="w-full input-glass rounded-xl px-4 py-4 text-base outline-none text-white font-mono tracking-widest" placeholder="01012345678">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2">الرقم القومي (14 رقم) <span class="text-red-400">*</span></label>
+                    <input type="text" id="reg-nid" required maxlength="14" minlength="14" class="w-full input-glass rounded-xl px-4 py-4 text-base outline-none text-white font-mono tracking-widest" placeholder="29010...">
+                </div>
+            </div>
+            <button type="submit" id="step1-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl transition shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                تحقق من البيانات والمتابعة <i data-lucide="arrow-left"></i>
+            </button>
+        </form>
+
+        <!-- STEP 2: FULL FORM -->
+        <form id="step2-form" class="hidden space-y-5 relative z-10 animate-fade-in pb-4">
+            <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
+                <div class="flex items-center gap-2 mb-2 p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <i data-lucide="shield-check" class="text-emerald-400 w-4 h-4"></i>
+                    <p class="text-[10px] text-emerald-400 font-black">البيانات متاحة، يرجى إكمال باقي الملف</p>
+                </div>
+                
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">الاسم الرباعي <span class="text-red-400">*</span></label>
                     <input type="text" id="reg-name" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white">
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">الرقم القومي (14 رقم) <span class="text-red-400">*</span></label>
-                        <input type="text" id="reg-nid" required maxlength="14" minlength="14" class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono tracking-widest" placeholder="29010...">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">رقم الواتساب <span class="text-red-400">*</span></label>
+                        <input type="tel" id="reg-whatsapp" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono" placeholder="01...">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">العنوان بالتفصيل <span class="text-red-400">*</span></label>
-                        <input type="text" id="reg-address" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white" placeholder="المحافظة - المركز - الشارع">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">المحافظة (تلقائي)</label>
+                        <input type="text" id="reg-province" readonly class="w-full bg-slate-800/50 rounded-xl px-4 py-3 text-sm text-blue-400 font-bold border border-white/5 outline-none">
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">البريد الإلكتروني <span class="text-red-400">*</span></label>
+                    <input type="email" id="reg-email" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">العنوان التفصيلي <span class="text-red-400">*</span></label>
+                    <input type="text" id="reg-address" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white" placeholder="الشارع - رقم العمارة - الدور">
                 </div>
             </div>
 
-            <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700/50 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">رقم المحمول <span class="text-red-400">*</span></label>
-                        <input type="tel" id="reg-phone" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono tracking-widest" placeholder="010...">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">اسم النشاط / المحل <span class="text-red-400">*</span></label>
+                        <input type="text" id="reg-shop-name" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">البريد الإلكتروني <span class="text-red-400">*</span></label>
-                        <input type="email" id="reg-email" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono" placeholder="name@drpay.com">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">عنوان النشاط <span class="text-red-400">*</span></label>
+                        <input type="text" id="reg-shop-address" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">كلمة المرور <span class="text-red-400">*</span></label>
-                    <div class="relative">
-                        <input type="password" id="reg-password" onkeyup="checkPassStrength(this.value)" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono" placeholder="••••••••">
-                        <button type="button" onclick="togglePassword('reg-password')" class="absolute left-3 top-3 text-slate-400 hover:text-white transition-colors"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">تعيين كلمة المرور <span class="text-red-400">*</span></label>
+                    <input type="password" id="reg-password" required class="w-full input-glass rounded-xl px-4 py-3 text-sm outline-none text-white font-mono" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700/50 space-y-4">
+                <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">صور البطاقة الشخصية</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <div id="cam-box-front" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center cursor-pointer" onclick="openCamera('id-front')">
+                            <img id="prev-id-front" class="absolute inset-0 w-full h-full object-cover hidden">
+                            <div id="icon-id-front" class="text-center">
+                                <i data-lucide="camera" class="w-6 h-6 mx-auto mb-1 text-slate-500"></i>
+                                <span class="text-[9px] font-bold text-slate-400">وجه البطاقة</span>
+                            </div>
+                        </div>
                     </div>
-                    <div id="pass-strength" class="text-[10px] mt-1.5 font-bold transition-colors hidden flex items-center gap-1">
-                        <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden flex-1"><div id="pass-bar" class="h-full bg-red-500 w-1/3 transition-all"></div></div>
-                        <span id="pass-msg" class="w-24 text-left">ضعيفة</span>
+                    <div class="space-y-2">
+                        <div id="cam-box-back" class="relative group h-32 rounded-xl overflow-hidden bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center cursor-pointer" onclick="openCamera('id-back')">
+                            <img id="prev-id-back" class="absolute inset-0 w-full h-full object-cover hidden">
+                            <div id="icon-id-back" class="text-center">
+                                <i data-lucide="camera" class="w-6 h-6 mx-auto mb-1 text-slate-500"></i>
+                                <span class="text-[9px] font-bold text-slate-400">ظهر البطاقة</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700/50 space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="border-2 border-dashed border-slate-600 bg-slate-800/80 rounded-xl p-3 text-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden group h-32 flex flex-col items-center justify-center">
-                        <input type="file" id="reg-id-front" accept="image/jpeg, image/png, image/webp" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewImage(this, 'preview-front')">
-                        <div class="text-slate-400 group-hover:text-blue-400 transition" id="preview-front-icon">
-                            <i data-lucide="image-plus" class="w-6 h-6 mx-auto mb-2 opacity-70"></i>
-                            <p class="text-[10px] font-black">صورة البطاقة (الوجه)</p>
-                        </div>
-                        <img id="preview-front" class="absolute inset-0 w-full h-full object-cover hidden">
-                        <div class="absolute inset-0 bg-black/50 items-center justify-center hidden group-hover:flex z-0" id="preview-front-hover"><i data-lucide="edit-3" class="text-white w-5 h-5"></i></div>
-                    </div>
-                    <div class="border-2 border-dashed border-slate-600 bg-slate-800/80 rounded-xl p-3 text-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden group h-32 flex flex-col items-center justify-center">
-                        <input type="file" id="reg-id-back" accept="image/jpeg, image/png, image/webp" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewImage(this, 'preview-back')">
-                        <div class="text-slate-400 group-hover:text-blue-400 transition" id="preview-back-icon">
-                            <i data-lucide="image-plus" class="w-6 h-6 mx-auto mb-2 opacity-70"></i>
-                            <p class="text-[10px] font-black">صورة البطاقة (الظهر)</p>
-                        </div>
-                        <img id="preview-back" class="absolute inset-0 w-full h-full object-cover hidden">
-                        <div class="absolute inset-0 bg-black/50 items-center justify-center hidden group-hover:flex z-0" id="preview-back-hover"><i data-lucide="edit-3" class="text-white w-5 h-5"></i></div>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="submit" id="reg-btn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 flex items-center justify-center gap-2">
+            <button type="submit" id="reg-btn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-2xl transition shadow-xl active:scale-95 flex items-center justify-center gap-2">
                 إرسال الحساب للمراجعة <i data-lucide="check-circle" class="w-5 h-5"></i>
             </button>
-
-            <div class="text-center mt-4">
-                <a href="login.html" class="text-[11px] font-bold text-slate-400 hover:text-white transition">لديك حساب بالفعل؟ تسجيل الدخول</a>
-            </div>
         </form>
+
+        <!-- CAMERA MODAL -->
+        <div id="cam-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex flex-col items-center justify-center p-4">
+            <video id="video-stream" autoplay playsinline class="w-full max-w-sm rounded-[2rem] border-2 border-white/20 shadow-2xl overflow-hidden"></video>
+            <div class="mt-8 flex gap-4">
+                <button onclick="closeCamera()" class="bg-slate-800 text-white p-4 rounded-full border border-white/10"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button onclick="takeSnapshot()" class="bg-white text-slate-900 p-6 rounded-full shadow-2xl transform active:scale-90 transition"><i data-lucide="camera" class="w-8 h-8"></i></button>
+            </div>
+            <p class="mt-4 text-xs text-slate-400 font-bold">ضع البطاقة داخل الإطار وقم بالالتقاط</p>
+        </div>
 
         <!-- OTP VIEW -->
         <div id="otp-view" class="hidden space-y-6 relative z-10 animate-fade-in text-center">
-            <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <i data-lucide="message-square" class="text-blue-400 w-8 h-8"></i>
+            <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 shadow-inner">
+                <i data-lucide="message-square" class="text-emerald-400 w-10 h-10"></i>
             </div>
             <h2 class="text-xl font-black text-white">تأكيد رقم الهاتف</h2>
-            <p class="text-xs text-slate-400 leading-relaxed">أدخل كود التحقق (6 أرقام) الذي تم إرساله إلى الواتساب الخاص بك لإتمام عملية التسجيل.</p>
-            
-            <input type="text" id="otp-code" maxlength="6" class="w-full text-center tracking-[1rem] py-4 bg-slate-900 rounded-2xl border border-slate-700 text-2xl font-black text-blue-400 outline-none focus:border-blue-500 transition-all" placeholder="000000">
-            
-            <button onclick="verifyOTP()" id="otp-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95">تأكيد الرمز وإتمام التسجيل</button>
-            <button onclick="location.reload()" class="text-xs text-slate-500 hover:text-white font-bold transition">رجوع لتعديل البيانات</button>
+            <p class="text-xs text-slate-400 leading-relaxed px-6">أدخل كود التحقق المرسل إلى الواتساب الخاص بك لإتمام عملية التسجيل وتفعيل حسابك.</p>
+            <input type="text" id="otp-code" maxlength="6" class="w-full text-center tracking-[1rem] py-5 bg-slate-900 rounded-2xl border border-slate-700 text-3xl font-black text-emerald-400 outline-none focus:border-emerald-500 transition-all shadow-inner" placeholder="000000">
+            <button onclick="verifyOTP()" id="otp-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl transition shadow-xl active:scale-95">تأكيد الرمز وإتمام التسجيل</button>
         </div>
 
         <div id="result" class="mt-6 text-center hidden p-4 rounded-xl font-bold border text-sm backdrop-blur-md transition-all"></div>
     </div>
+
+    <!-- HIDDEN CANVAS FOR CAMERA CAPTURE -->
+    <canvas id="cam-canvas" class="hidden" width="1080" height="720"></canvas>
     
     <script>
         lucide.createIcons();
-        window.registrationData = null;
+        window.registrationData = {};
+        let currentTarget = null;
+        let stream = null;
 
-        function togglePassword(id) {
-            const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
+        // Auto Request Location on Load
+        window.onload = () => {
+             if (navigator.geolocation) {
+                 navigator.geolocation.getCurrentPosition(()=>{}, (err)=>{
+                     alert("يرجى الموافقة على صلاحية الموقع لفتح حساب تاجر.");
+                 });
+             }
+        };
+
+        function getProvinceFromNID(nid) {
+            if (nid.length < 9) return "";
+            const code = nid.substring(7, 9);
+            const mapping = {
+                '01': 'القاهرة', '02': 'الإسكندرية', '03': 'بورسعيد', '04': 'السويس',
+                '11': 'دمياط', '12': 'الدقهلية', '13': 'الشرقية', '14': 'القليوبية',
+                '15': 'كفر الشيخ', '16': 'الغربية', '17': 'المنوفية', '18': 'البحيرة',
+                '19': 'الإسماعيلية', '21': 'الجيزة', '22': 'بني سويف', '23': 'الفيوم',
+                '24': 'المنيا', '25': 'أسيوط', '26': 'سوهاج', '27': 'قنا',
+                '28': 'أسوان', '29': 'الأقصر', '31': 'البحر الأحمر', '32': 'الوادي الجديد',
+                '33': 'مطروح', '34': 'شمال سيناء', '35': 'جنوب سيناء', '88': 'خارج مصر'
+            };
+            return mapping[code] || "غير محدد";
         }
 
-        function checkPassStrength(val) {
-            const ind = document.getElementById('pass-strength');
-            const msg = document.getElementById('pass-msg');
-            const bar = document.getElementById('pass-bar');
-            ind.classList.remove('hidden');
-            if (val.length === 0) { ind.classList.add('hidden'); return; }
-            if (val.length < 6) { msg.className = 'w-24 text-left text-red-400'; msg.textContent = 'ضعيفة جداً'; bar.className = 'h-full bg-red-400 w-1/4 transition-all'; }
-            else if (val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) { msg.className = 'w-24 text-left text-emerald-400'; msg.textContent = 'قوية'; bar.className = 'h-full bg-emerald-400 w-full transition-all'; }
-            else if (val.length >= 8 && (/[A-Z]/.test(val) || /[0-9]/.test(val))) { msg.className = 'w-24 text-left text-blue-400'; msg.textContent = 'جيدة'; bar.className = 'h-full bg-blue-400 w-2/3 transition-all'; }
-            else { msg.className = 'w-24 text-left text-yellow-400'; msg.textContent = 'متوسطة'; bar.className = 'h-full bg-yellow-400 w-1/2 transition-all'; }
-        }
+        document.getElementById('step1-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('reg-phone').value;
+            const nid = document.getElementById('reg-nid').value;
+            const btn = document.getElementById('step1-btn');
+            
+            btn.disabled = true; btn.innerHTML = 'جاري التحقق...';
+            
+            try {
+                const res = await fetch(`/api/index.js?action=check_user_existence`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ phone, national_id: nid })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.registrationData.phone = phone;
+                    window.registrationData.national_id = nid;
+                    window.registrationData.province = getProvinceFromNID(nid);
+                    document.getElementById('reg-province').value = window.registrationData.province;
+                    
+                    document.getElementById('step1-form').classList.add('hidden');
+                    document.getElementById('step2-form').classList.remove('hidden');
+                    document.getElementById('step-desc').textContent = "أهلاً بك، يرجى استكمال باقي التفاصيل بدقة";
+                    lucide.createIcons();
+                } else throw new Error(data.error);
+            } catch(err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'تحقق من البيانات والمتابعة <i data-lucide="arrow-left"></i>';
+                lucide.createIcons();
+            }
+        });
 
-        function previewImage(input, previewId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById(previewId);
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                    document.getElementById(previewId + '-icon').classList.add('hidden');
-                    document.getElementById(previewId + '-hover').classList.remove('hidden');
-                }
-                reader.readAsDataURL(input.files[0]);
+        // Camera Logic
+        async function openCamera(target) {
+            currentTarget = target;
+            document.getElementById('cam-modal').classList.remove('hidden');
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                document.getElementById('video-stream').srcObject = stream;
+            } catch(err) {
+                alert("لم نستطع فتح الكاميرا. يرجى التأكد من الصلاحيات.");
+                closeCamera();
             }
         }
-
-        async function resizeImage(file) {
-            return new Promise((resolve, reject) => {
-                if (!file) return resolve(null);
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000;
-                        let width = img.width; let height = img.height;
-                        if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.65));
-                    };
-                };
-                reader.onerror = error => reject(error);
-            });
+        function closeCamera() {
+            if(stream) stream.getTracks().forEach(t => t.stop());
+            document.getElementById('cam-modal').classList.add('hidden');
+        }
+        function takeSnapshot() {
+            const video = document.getElementById('video-stream');
+            const canvas = document.getElementById('cam-canvas');
+            const img = document.getElementById('prev-' + currentTarget);
+            const icon = document.getElementById('icon-' + currentTarget);
+            
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            img.src = dataUrl;
+            img.classList.remove('hidden');
+            if(icon) icon.classList.add('hidden');
+            window.registrationData[currentTarget.replace('-','_')] = dataUrl;
+            
+            closeCamera();
         }
 
-        function showResult(isSuccess, message) {
-            const div = document.getElementById('result');
-            div.classList.remove('hidden', 'border-red-500', 'text-red-400', 'bg-red-500/10', 'border-emerald-500', 'text-emerald-400', 'bg-emerald-500/10');
-            if(isSuccess) { div.classList.add('border-emerald-500', 'text-emerald-400', 'bg-emerald-500/10'); }
-            else { div.classList.add('border-red-500', 'text-red-400', 'bg-red-500/10'); }
-            div.textContent = message;
-        }
-
-        async function getSecurityPayload() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) return reject(new Error("جهازك لا يدعم تحديد الموقع."));
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        let deviceId = localStorage.getItem('drpay_device_id');
-                        if(!deviceId) {
-                            deviceId = 'DEV-' + btoa(navigator.userAgent + screen.width + screen.height).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16) + Date.now();
-                            localStorage.setItem('drpay_device_id', deviceId);
-                        }
-                        resolve({
-                            device_id: deviceId,
-                            location: { lat: position.coords.latitude, lng: position.coords.longitude },
-                            device_info: {
-                                userAgent: navigator.userAgent, platform: navigator.platform, language: navigator.language,
-                                memory: navigator.deviceMemory || 'Unknown', cores: navigator.hardwareConcurrency || 'Unknown',
-                                screen: `${screen.width}x${screen.height}`, network: navigator.connection ? navigator.connection.effectiveType : 'Unknown'
-                            }
-                        });
-                    },
-                    (error) => { reject(new Error("يرجى الموافقة على صلاحية الموقع للمتابعة.")); },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            });
-        }
-
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
+        document.getElementById('step2-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('reg-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> جاري التحقق...`;
-            lucide.createIcons();
-
+            if(!window.registrationData.id_front || !window.registrationData.id_back) return alert("يرجى التقاط صورة البطاقة وجه وخلف.");
+            
+            btn.disabled = true; btn.innerHTML = 'جاري تسجيل الطلب...';
+            
             try {
-                const secPayload = await getSecurityPayload();
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> جاري رفع الصور...`;
-                lucide.createIcons();
-
-                const imgFrontBase64 = await resizeImage(document.getElementById('reg-id-front').files[0]);
-                const imgBackBase64 = await resizeImage(document.getElementById('reg-id-back').files[0]);
-
-                const payload = {
+                // Get Location
+                const pos = await new Promise((res, rej) => {
+                    navigator.geolocation.getCurrentPosition(res, rej, {timeout: 10000});
+                });
+                
+                const finalData = {
+                    ...window.registrationData,
                     name: document.getElementById('reg-name').value,
-                    phone: document.getElementById('reg-phone').value,
+                    whatsapp_number: document.getElementById('reg-whatsapp').value,
                     email: document.getElementById('reg-email').value,
-                    password: document.getElementById('reg-password').value,
-                    national_id: document.getElementById('reg-nid').value,
                     address: document.getElementById('reg-address').value,
-                    id_front_image: imgFrontBase64,
-                    id_back_image: imgBackBase64,
-                    ...secPayload
+                    shop_name: document.getElementById('reg-shop-name').value,
+                    shop_address: document.getElementById('reg-shop-address').value,
+                    password: document.getElementById('reg-password').value,
+                    location: { lat: pos.coords.latitude, lng: pos.coords.longitude }
                 };
 
                 const res = await fetch('/api/index.js?action=register', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    method: 'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify(finalData)
                 });
-
                 const data = await res.json();
+                
                 if (data.otp_required) {
-                    window.registrationData = payload;
-                    document.getElementById('register-form').classList.add('hidden');
+                    window.finalRegistrationData = finalData;
+                    document.getElementById('step2-form').classList.add('hidden');
                     document.getElementById('otp-view').classList.remove('hidden');
-                    showResult(true, data.message);
-                    lucide.createIcons();
-                    return;
-                }
-
-                if (data.success) {
-                    showResult(true, "تم التسجيل بنجاح!");
-                    localStorage.setItem('drpay_user', JSON.stringify(data.user));
-                    localStorage.setItem('drpay_token', data.token);
-                    setTimeout(() => window.location.href = 'index.html', 1500);
-                } else {
-                    throw new Error(data.error || 'فشلت العملية');
-                }
-            } catch (error) {
-                showResult(false, error.message);
+                    document.getElementById('step-desc').textContent = "أنت على بعد خطوة واحدة من تفعيل حسابك";
+                } else throw new Error(data.error || 'فشلت العملية');
+            } catch(err) {
+                alert(err.message);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = `إرسال الحساب للمراجعة <i data-lucide="check-circle" class="w-5 h-5"></i>`;
+                btn.disabled = false; btn.innerHTML = 'إرسال الحساب للمراجعة <i data-lucide="check-circle" class="w-5 h-5"></i>';
                 lucide.createIcons();
             }
         });
 
         async function verifyOTP() {
             const code = document.getElementById('otp-code').value;
-            if (code.length < 6) return showResult(false, "يرجى إدخال كود التحقق المكون من 6 أرقام");
-            
             const btn = document.getElementById('otp-btn');
-            btn.disabled = true;
-            btn.innerHTML = 'جاري التحقق...';
-
+            btn.disabled = true; btn.textContent = 'جاري التحقق...';
             try {
                 const res = await fetch('/api/index.js?action=verify_otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        phone: window.registrationData.phone,
+                        phone: window.finalRegistrationData.phone,
                         code: code,
                         purpose: 'register',
-                        registration_data: window.registrationData
+                        registration_data: window.finalRegistrationData
                     })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showResult(true, "تم التحقق والاشتراك بنجاح!");
+                    alert("تم التسجيل وفتح الحساب بنجاح! جاري توجيهك...");
                     localStorage.setItem('drpay_user', JSON.stringify(data.user));
                     localStorage.setItem('drpay_token', data.token);
-                    setTimeout(() => window.location.href = 'index.html', 1500);
-                } else {
-                    throw new Error(data.error || "كود التحقق خاطئ");
-                }
-            } catch (error) {
-                showResult(false, error.message);
-                btn.disabled = false;
-                btn.innerHTML = 'تأكيد الرمز وإتمام التسجيل';
+                    window.location.href = 'index.html';
+                } else throw new Error(data.error);
+            } catch(err) {
+                alert(err.message);
+                btn.disabled = false; btn.textContent = 'تأكيد الرمز وإتمام التسجيل';
             }
         }
     </script>
 </body>
 </html>
-```
