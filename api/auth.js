@@ -18,9 +18,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'بيانات ناقصة' })
     }
 
-    // جلب المستخدم
+    // 🔍 البحث عن المستخدم
     const { data: user, error } = await supabase
-      .from('users')
+      .from('custom_users')
       .select('*')
       .eq('phone', phone)
       .single()
@@ -29,29 +29,34 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'المستخدم غير موجود' })
     }
 
+    // 🚫 لو الحساب متوقف
     if (user.status !== 'active') {
       return res.status(403).json({ error: 'الحساب موقوف' })
     }
 
-    // مقارنة الباسورد
+    // 🔐 مقارنة الباسورد
     const match = await bcrypt.compare(password, user.password)
 
     if (!match) {
       return res.status(401).json({ error: 'كلمة المرور غلط' })
     }
 
-    // إنشاء توكن
-    const token = uuidv4()
+    // 🔑 إنشاء session
+    const session_id = uuidv4()
 
     await supabase.from('sessions').insert([
-      { user_id: user.id, token }
+      {
+        user_id: user.id,
+        session_id
+      }
     ])
 
     return res.json({
       success: true,
-      token,
+      token: session_id,
       user: {
         id: user.id,
+        name: user.name,
         phone: user.phone,
         role: user.role
       }
