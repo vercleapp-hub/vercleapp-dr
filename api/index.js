@@ -2,8 +2,8 @@ const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
 const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://wkhkjwinxduktqvszgby.supabase.co', 
-  process.env.SUPABASE_ANON_KEY || 'sb_publishable_7h7u-Fpfwq7RU_clkAk3uA_RJJDYdVX'
+  process.env.SUPABASE_URL || 'https://auwnsxmdksplftccysqu.supabase.co', 
+  process.env.SUPABASE_ANON_KEY || 'sb_publishable_sCsVKIE6tLVRgNnIRHzKSw_T5iQntHi'
 );
 
 // Helper to standardize Egyptian phone numbers (Last 11 digits: 01xxxxxxxxx)
